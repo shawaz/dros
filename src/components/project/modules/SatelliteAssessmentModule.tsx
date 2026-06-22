@@ -1,0 +1,146 @@
+"use client"
+
+import React, { useState } from "react"
+import { Satellite } from "lucide-react"
+import { Project } from "@/data/projects"
+import { SatelliteMapPanel } from "./SatelliteMapPanel"
+
+interface SatelliteAssessmentModuleProps {
+  project: Project
+  onToast: (msg: string) => void
+}
+
+const CHART_WIDTH = 600
+const CHART_HEIGHT = 140
+
+export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps> = ({
+  project,
+}) => {
+  const satellite = project.satellite
+  const history = satellite?.ndviHistory ?? []
+  const hasHistory = history.length > 0
+  const [yearIndex, setYearIndex] = useState(Math.max(history.length - 1, 0))
+  const selected = hasHistory ? history[yearIndex] : null
+  const currentYear = new Date().getFullYear()
+  const latestYear = hasHistory ? history[history.length - 1].year : currentYear
+
+  const maxNdvi = hasHistory ? Math.max(...history.map((h) => h.ndvi), 0.1) : 1
+  const pointFor = (i: number, ndvi: number) => {
+    const x = (i / Math.max(history.length - 1, 1)) * (CHART_WIDTH - 20) + 10
+    const y = CHART_HEIGHT - 10 - (ndvi / maxNdvi) * (CHART_HEIGHT - 30)
+    return { x, y }
+  }
+  const linePath = history
+    .map((h, i) => {
+      const { x, y } = pointFor(i, h.ndvi)
+      return `${i === 0 ? "M" : "L"}${x} ${y}`
+    })
+    .join(" ")
+  const areaPath = hasHistory
+    ? `${linePath} L${pointFor(history.length - 1, 0).x} ${CHART_HEIGHT} L${pointFor(0, 0).x} ${CHART_HEIGHT} Z`
+    : ""
+  const activePoint = selected ? pointFor(yearIndex, selected.ndvi) : null
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white border border-border rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="font-sans text-sm font-semibold text-ink">Satellite View</h3>
+            <p className="text-xs text-muted-custom">Current NDVI overlay vs. true-color imagery</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <SatelliteMapPanel project={project} layer="ndvi" label="NDVI" />
+          <SatelliteMapPanel project={project} layer="true-color" label="Current · True Color" />
+        </div>
+        {hasHistory && (
+          <>
+            <input
+              type="range"
+              min={0}
+              max={history.length - 1}
+              value={yearIndex}
+              onChange={(e) => setYearIndex(parseInt(e.target.value, 10))}
+              className="w-full mt-4 accent-green-custom cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-dim font-mono mt-1">
+              <span>{history[0].year}</span>
+              <span>{latestYear}</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {satellite ? (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Metric label="NDVI Score" value={satellite.ndviScore.toFixed(3)} />
+            <Metric label="Soil Moisture Index" value={satellite.soilMoistureIndex.toFixed(3)} />
+            <Metric label="Surface Temperature" value={`${satellite.surfaceTempC.toFixed(1)}°C`} />
+            <Metric label="Albedo Effect" value={satellite.albedoEffect.toFixed(2)} />
+          </div>
+
+          <div className="bg-white border border-border rounded-xl p-5">
+            <h3 className="font-sans text-sm font-semibold text-ink">NDVI — 10 Year Trend</h3>
+            <p className="text-xs text-muted-custom mb-4">Vegetation index decline leading into restoration</p>
+            <svg
+              width="100%"
+              height={CHART_HEIGHT}
+              viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+              preserveAspectRatio="none"
+              className="overflow-visible"
+            >
+              <defs>
+                <linearGradient id={`ndviHist-${project.id}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2E8B57" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="#2E8B57" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d={areaPath} fill={`url(#ndviHist-${project.id})`} />
+              <path d={linePath} stroke="#2E8B57" strokeWidth="2" fill="none" strokeLinecap="round" />
+              {activePoint && selected && (
+                <>
+                  <circle cx={activePoint.x} cy={activePoint.y} r="4" fill="#2E8B57" />
+                  <text
+                    x={activePoint.x}
+                    y={activePoint.y - 10}
+                    fontSize="10"
+                    fill="#2E8B57"
+                    fontFamily="var(--font-mono)"
+                    textAnchor="middle"
+                  >
+                    {selected.ndvi.toFixed(3)}
+                  </text>
+                </>
+              )}
+            </svg>
+            <div className="flex justify-between text-[10px] text-dim font-mono mt-1">
+              {history.map((h) => (
+                <span key={h.year}>{h.year}</span>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="bg-white border border-border rounded-xl p-8 flex flex-col items-center text-center gap-2">
+          <Satellite className="w-6 h-6 text-dim" />
+          <h3 className="font-sans text-sm font-semibold text-ink">Not Yet Assessed</h3>
+          <p className="text-xs text-muted-custom max-w-sm">
+            NDVI score, soil moisture, surface temperature, and the 10-year vegetation trend
+            will appear here once a satellite assessment has been captured for this site.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const Metric: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div className="bg-white border border-border rounded-xl p-4">
+    <div className="text-[11px] font-semibold text-muted-custom tracking-wider uppercase mb-2">
+      {label}
+    </div>
+    <div className="font-sans text-2xl font-bold text-ink tracking-tight">{value}</div>
+  </div>
+)
