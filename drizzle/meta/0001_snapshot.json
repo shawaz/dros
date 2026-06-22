@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "769ade97-8edb-42f5-bfa4-4d3d483a587f",
-  "prevId": "4fde6922-12be-4fbd-aada-f4308ca5ad27",
+  "id": "c40f6115-d844-4555-8c2d-f517ed14ca5d",
+  "prevId": "edd5343b-e5cb-4d9b-8446-093a71cbefd6",
   "tables": {
     "projects": {
       "name": "projects",
@@ -238,22 +238,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "soil": {
-          "name": "soil",
+        "lab_report": {
+          "name": "lab_report",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "microbiome": {
-          "name": "microbiome",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "prescription": {
-          "name": "prescription",
+        "rehab_report": {
+          "name": "rehab_report",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -292,6 +285,20 @@
           "type": "real",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "satellite_report": {
+          "name": "satellite_report",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "soil_report": {
+          "name": "soil_report",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },

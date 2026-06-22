@@ -1,21 +1,24 @@
+export type Status3 = "ok" | "warn" | "critical"
+export type Status4 = "ok" | "warn" | "critical" | "info"
+
 export interface SoilPhysicalProperty {
   parameter: string
   result: string
   optimal: string
-  status: "ok" | "warn" | "critical"
+  status: Status3
 }
 
 export interface SoilChemicalProperty {
   parameter: string
   result: string
   optimal: string
-  status: "ok" | "warn" | "critical"
+  status: Status3
 }
 
 export interface MicrobialIndicator {
   parameter: string
   result: string
-  status: "ok" | "warn" | "critical" | "info"
+  status: Status4
 }
 
 export interface DetectedSpecies {

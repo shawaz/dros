@@ -84,3 +84,27 @@ export function estimateHealthRisk(input: {
     aridity,
   }
 }
+
+export interface SurfaceMetricsEstimate {
+  surfaceTempC: number
+  albedoEffect: number
+}
+
+// Provisional heuristic — NOT a measurement. Sentinel-2 carries no thermal
+// band (Landsat thermal is out of scope), so until a real thermal source is
+// integrated this derives a plausible surface temperature and albedo proxy
+// from aridity + NDVI. Note `aridity` here is this codebase's existing
+// rainfall-proportional field (rainfallMm / 1600, see estimateHealthRisk
+// above) — higher value means *wetter*, not more arid, confirmed against the
+// seed projects (healthy DROS-03: 0.23, severe-desert DROS-02: 0.01). Sparser
+// vegetation and lower (drier) values push surface temperature and albedo
+// (bare-soil reflectivity) up.
+export function estimateSurfaceMetrics(input: { aridity: number; ndviScore: number | null }): SurfaceMetricsEstimate {
+  const ndvi = input.ndviScore ?? 0.15
+  const vegetationCover = Math.max(0, Math.min(1, ndvi / 0.6))
+  const wetness = Math.max(0, Math.min(1, input.aridity))
+  const baseTempC = 40 - wetness * 14
+  const surfaceTempC = Math.round((baseTempC - vegetationCover * 6) * 10) / 10
+  const albedoEffect = Math.round((0.15 + (1 - vegetationCover) * 0.25) * 100) / 100
+  return { surfaceTempC, albedoEffect }
+}

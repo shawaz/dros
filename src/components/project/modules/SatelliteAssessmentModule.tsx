@@ -1,9 +1,11 @@
 "use client"
 
 import React, { useState } from "react"
-import { Satellite } from "lucide-react"
-import { Project } from "@/data/projects"
+import { Loader2, RefreshCw, Satellite } from "lucide-react"
+import { Project, SatelliteMetrics } from "@/data/projects"
+import { Button } from "@/components/ui/button"
 import { SatelliteMapPanel } from "./SatelliteMapPanel"
+import { SatelliteReportModule } from "./satellite-report/SatelliteReportModule"
 
 interface SatelliteAssessmentModuleProps {
   project: Project
@@ -15,8 +17,29 @@ const CHART_HEIGHT = 140
 
 export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps> = ({
   project,
+  onToast,
 }) => {
-  const satellite = project.satellite
+  const [satellite, setSatellite] = useState<SatelliteMetrics | null>(project.satellite)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    try {
+      const res = await fetch(`/api/projects/${project.id}/satellite-assessment`, { method: "POST" })
+      const json = await res.json()
+      if (json.available && json.project?.satellite) {
+        setSatellite(json.project.satellite)
+        onToast("Satellite assessment refreshed")
+      } else {
+        onToast("Satellite data unavailable right now — try again shortly")
+      }
+    } catch {
+      onToast("Couldn't reach the server. Check your connection and try again.")
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   const history = satellite?.ndviHistory ?? []
   const hasHistory = history.length > 0
   const [yearIndex, setYearIndex] = useState(Math.max(history.length - 1, 0))
@@ -49,6 +72,19 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
             <h3 className="font-sans text-sm font-semibold text-ink">Satellite View</h3>
             <p className="text-xs text-muted-custom">Current NDVI overlay vs. true-color imagery</p>
           </div>
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+            {refreshing ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Refreshing — this can take up to 30 seconds…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-3.5 h-3.5" />
+                Refresh Satellite Assessment
+              </>
+            )}
+          </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <SatelliteMapPanel project={project} layer="ndvi" label="NDVI" />
@@ -131,6 +167,10 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
             will appear here once a satellite assessment has been captured for this site.
           </p>
         </div>
+      )}
+
+      {satellite && (
+        <SatelliteReportModule project={project} onToast={onToast} />
       )}
     </div>
   )

@@ -5,14 +5,15 @@ import type {
   AOI,
   SatelliteMetrics,
   DroneFlightLog,
-  SoilComposition,
-  Microbiome,
   KanbanTask,
   ResourceInventory,
   BiomassPoint,
   DMRVStep,
 } from "@/data/projects"
 import type { RehabilitationReport } from "@/data/rehabilitation-report"
+import type { LabReport } from "@/data/lab-report"
+import type { SatelliteAssessmentReport } from "@/data/satellite-report"
+import type { SoilBioReport } from "@/data/soil-bio-report"
 
 export const projectsTable = sqliteTable("projects", {
   id: text("id").primaryKey(),
@@ -48,12 +49,13 @@ export const projectsTable = sqliteTable("projects", {
   aoi: text("aoi", { mode: "json" }).notNull().$type<AOI>(),
   satellite: text("satellite", { mode: "json" }).$type<SatelliteMetrics>(),
   droneLogs: text("drone_logs", { mode: "json" }).notNull().$type<DroneFlightLog[]>(),
-  soil: text("soil", { mode: "json" }).$type<SoilComposition>(),
-  microbiome: text("microbiome", { mode: "json" }).$type<Microbiome>(),
+  labReport: text("lab_report", { mode: "json" }).$type<LabReport>(),
   rehabReport: text("rehab_report", { mode: "json" }).$type<RehabilitationReport>(),
   kanban: text("kanban", { mode: "json" }).notNull().$type<KanbanTask[]>(),
   resources: text("resources", { mode: "json" }).$type<ResourceInventory>(),
   biomass: text("biomass", { mode: "json" }).notNull().$type<BiomassPoint[]>(),
   dmrv: text("dmrv", { mode: "json" }).notNull().$type<DMRVStep[]>(),
   carbonSequesteredTons: real("carbon_sequestered_tons").notNull(),
+  satelliteReport: text("satellite_report", { mode: "json" }).$type<SatelliteAssessmentReport>(),
+  soilReport: text("soil_report", { mode: "json" }).$type<SoilBioReport>(),
 })

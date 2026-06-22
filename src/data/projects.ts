@@ -1,4 +1,7 @@
 import type { RehabilitationReport } from './rehabilitation-report'
+import type { LabReport } from './lab-report'
+import type { SatelliteAssessmentReport } from './satellite-report'
+import type { SoilBioReport } from './soil-bio-report'
 
 export interface Phase {
   name: string
@@ -10,26 +13,6 @@ export interface Phase {
 export interface Recommendation {
   t: string
   d: string
-}
-
-export interface NPKLevels {
-  nitrogen: number | null
-  phosphorus: number | null
-  potassium: number | null
-}
-
-export interface SoilComposition {
-  npk: NPKLevels
-  organicMatterPct: number | null
-  salinityDS: number | null
-  heavyMetalsDetected: boolean | null
-  toxicityNotes: string | null
-}
-
-export interface Microbiome {
-  fungalToBacterialRatio: number
-  microbialBiomassCarbon: number
-  mycorrhizalSporeDensity: number
 }
 
 export interface NdviYear {
@@ -120,14 +103,15 @@ export interface Project {
   aoi: AOI
   satellite: SatelliteMetrics | null
   droneLogs: DroneFlightLog[]
-  soil: SoilComposition | null
-  microbiome: Microbiome | null
+  labReport: LabReport | null
   rehabReport: RehabilitationReport | null
   kanban: KanbanTask[]
   resources: ResourceInventory | null
   biomass: BiomassPoint[]
   dmrv: DMRVStep[]
   carbonSequesteredTons: number
+  satelliteReport: SatelliteAssessmentReport | null
+  soilReport: SoilBioReport | null
 }
 
 export interface ActivityItem {
@@ -198,18 +182,7 @@ export const projectsData: Project[] = [
       { date: '2025-02-08', batteryHealthPct: 94, areaCoveredHa: 410, dataUrl: 'dros01_flight_2025-02-08.zip' },
       { date: '2025-02-22', batteryHealthPct: 89, areaCoveredHa: 455, dataUrl: 'dros01_flight_2025-02-22.zip' },
     ],
-    soil: {
-      npk: { nitrogen: 11, phosphorus: 5, potassium: 102 },
-      organicMatterPct: 0.8,
-      salinityDS: 2.1,
-      heavyMetalsDetected: false,
-      toxicityNotes: 'Salinity (2.1 dS/m) and pH are within tolerable range for native species — no amendment required before planting.',
-    },
-    microbiome: {
-      fungalToBacterialRatio: 0.4,
-      microbialBiomassCarbon: 110,
-      mycorrhizalSporeDensity: 18,
-    },
+    labReport: null,
     rehabReport: null,
     kanban: [
       { id: 'd01-1', title: 'Groundwater survey', column: 'in-progress' },
@@ -233,6 +206,8 @@ export const projectsData: Project[] = [
       { registry: 'Gold Standard', label: 'Registration', status: 'pending' },
     ],
     carbonSequesteredTons: 0,
+    satelliteReport: null,
+    soilReport: null,
   },
   {
     id: 'DROS-02',
@@ -296,17 +271,57 @@ export const projectsData: Project[] = [
       { date: '2025-02-02', batteryHealthPct: 88, areaCoveredHa: 310, dataUrl: 'dros02_flight_2025-02-02.zip' },
       { date: '2025-02-19', batteryHealthPct: 81, areaCoveredHa: 295, dataUrl: 'dros02_flight_2025-02-19.zip' },
     ],
-    soil: {
-      npk: { nitrogen: 8, phosphorus: 4, potassium: 96 },
-      organicMatterPct: 0.6,
-      salinityDS: 4.8,
-      heavyMetalsDetected: false,
-      toxicityNotes: 'Elevated salinity (4.8 dS/m) combined with pH 8.1 will inhibit root uptake — gypsum/sulfur amendment required before any planting.',
-    },
-    microbiome: {
-      fungalToBacterialRatio: 0.3,
-      microbialBiomassCarbon: 95,
-      mycorrhizalSporeDensity: 12,
+    labReport: {
+      physical: {
+        texture: 'Sandy Loam',
+        sandPct: 78,
+        siltPct: 15,
+        clayPct: 7,
+        bulkDensityGCm3: 1.62,
+        waterHoldingCapacityPct: 11,
+        infiltrationRateMmHr: 32,
+      },
+      chemical: {
+        ph: 8.4,
+        ecDsM: 4.2,
+        organicMatterPct: 0.35,
+        totalNitrogenPct: 0.03,
+        phosphorusPpm: 4,
+        potassiumPpm: 110,
+        calciumPpm: 2100,
+        magnesiumPpm: 310,
+        sodiumPpm: 620,
+      },
+      carbon: {
+        socPct: 0.18,
+        currentStockTco2eHa: 8.5,
+        targetStockMinTco2eHa: 30,
+        targetStockMaxTco2eHa: 50,
+      },
+      microbial: {
+        biomassCarbon: 'low',
+        bacterialDiversity: 'low',
+        fungalDiversity: 'low',
+        nitrogenFixers: 'rare',
+        cyanobacteriaPresence: 'trace',
+        mycorrhizalFungi: 'absent',
+        detectedSpecies: [
+          { species: 'Bacillus subtilis', function: 'Nutrient cycling' },
+          { species: 'Pseudomonas spp.', function: 'Root growth promotion' },
+          { species: 'Azotobacter spp.', function: 'Nitrogen fixation' },
+          { species: 'Nostoc spp.', function: 'Biocrust formation' },
+          { species: 'Rhizobium spp.', function: 'Nitrogen fixation' },
+        ],
+      },
+      water: {
+        groundwaterDepthM: 32,
+        groundwaterEcDsM: 2.8,
+        annualRainfallMm: 95,
+        runoffCapturePotential: 'moderate',
+        floodEventsMinPerYear: 2,
+        floodEventsMaxPerYear: 4,
+      },
+      submittedAt: '2025-02-25T10:00:00.000Z',
     },
     rehabReport: null,
     kanban: [
@@ -331,12 +346,14 @@ export const projectsData: Project[] = [
       { registry: 'Gold Standard', label: 'Registration', status: 'pending' },
     ],
     carbonSequesteredTons: 0,
+    satelliteReport: null,
+    soilReport: null,
   },
   {
     id: 'DROS-03',
     name: 'Riyadh North Greening Programme',
     region: 'North Riyadh',
-    location: '54.659, 36.365',
+    location: '24.850, 46.700',
     status: 'active',
     risk: 'LOW',
     health: 91,
@@ -393,17 +410,55 @@ export const projectsData: Project[] = [
       { date: '2025-04-10', batteryHealthPct: 92, areaCoveredHa: 4100, dataUrl: 'dros03_flight_2025-04-10.zip' },
       { date: '2025-05-18', batteryHealthPct: 90, areaCoveredHa: 3950, dataUrl: 'dros03_flight_2025-05-18.zip' },
     ],
-    soil: {
-      npk: { nitrogen: 42, phosphorus: 18, potassium: 140 },
-      organicMatterPct: 3.4,
-      salinityDS: 0.8,
-      heavyMetalsDetected: false,
-      toxicityNotes: 'No salinity or heavy-metal concerns — soil chemistry supports natural canopy expansion without amendment.',
-    },
-    microbiome: {
-      fungalToBacterialRatio: 1.1,
-      microbialBiomassCarbon: 410,
-      mycorrhizalSporeDensity: 86,
+    labReport: {
+      physical: {
+        texture: 'Loam',
+        sandPct: 55,
+        siltPct: 30,
+        clayPct: 15,
+        bulkDensityGCm3: 1.3,
+        waterHoldingCapacityPct: 28,
+        infiltrationRateMmHr: 18,
+      },
+      chemical: {
+        ph: 7.3,
+        ecDsM: 0.8,
+        organicMatterPct: 3.4,
+        totalNitrogenPct: 0.18,
+        phosphorusPpm: 18,
+        potassiumPpm: 140,
+        calciumPpm: 1800,
+        magnesiumPpm: 280,
+        sodiumPpm: 90,
+      },
+      carbon: {
+        socPct: 2.73,
+        currentStockTco2eHa: 35,
+        targetStockMinTco2eHa: 40,
+        targetStockMaxTco2eHa: 55,
+      },
+      microbial: {
+        biomassCarbon: 'high',
+        bacterialDiversity: 'high',
+        fungalDiversity: 'moderate',
+        nitrogenFixers: 'moderate',
+        cyanobacteriaPresence: 'moderate',
+        mycorrhizalFungi: 'high',
+        detectedSpecies: [
+          { species: 'Trichoderma spp.', function: 'Root disease suppression' },
+          { species: 'Bacillus megaterium', function: 'Phosphorus solubilization' },
+          { species: 'Glomus spp. (AMF)', function: 'Mycorrhizal nutrient exchange' },
+        ],
+      },
+      water: {
+        groundwaterDepthM: 45,
+        groundwaterEcDsM: 1.2,
+        annualRainfallMm: 359,
+        runoffCapturePotential: 'high',
+        floodEventsMinPerYear: 3,
+        floodEventsMaxPerYear: 6,
+      },
+      submittedAt: '2025-04-15T09:00:00.000Z',
     },
     rehabReport: null,
     kanban: [
@@ -428,6 +483,8 @@ export const projectsData: Project[] = [
       { registry: 'Gold Standard', label: 'Registration', status: 'in-progress' },
     ],
     carbonSequesteredTons: 4820,
+    satelliteReport: null,
+    soilReport: null,
   }
 ]
 

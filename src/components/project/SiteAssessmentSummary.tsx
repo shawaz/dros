@@ -24,6 +24,10 @@ interface AssessmentResponse {
   health?: number
   risk?: "SEVERE" | "LOW"
   aridity?: number
+  satelliteAvailable?: boolean
+  ndvi?: number | null
+  ndviHistory?: { year: number; ndvi: number }[]
+  soilMoistureIndex?: number | null
   reason?: string
 }
 
@@ -76,6 +80,9 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
         health: data.health,
         risk: data.risk,
         aridity: data.aridity,
+        ndvi: data.ndvi ?? null,
+        ndviHistory: data.ndviHistory ?? [],
+        soilMoistureIndex: data.soilMoistureIndex ?? null,
       }),
     })
       .then((res) => res.json())
@@ -117,7 +124,11 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
               <Stat label="Health" value={`${data.health}/100`} />
               <Stat label="Risk" value={data.risk ?? "—"} />
               <Stat label="Rainfall" value={`${data.rainfall} mm/yr`} />
-              <Stat label="NDVI" value="Pending" muted />
+              <Stat
+                label="NDVI"
+                value={data.satelliteAvailable && data.ndvi != null ? data.ndvi.toFixed(3) : "Pending"}
+                muted={!data.satelliteAvailable || data.ndvi == null}
+              />
               <Stat label="Soil pH" value={data.ph !== null && data.ph !== undefined ? data.ph.toFixed(1) : "Not tested"} muted={data.ph == null} />
               <Stat
                 label="Organic Carbon"

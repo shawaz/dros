@@ -1,4 +1,4 @@
-import type { Project, DMRVStep } from "@/data/projects"
+import type { NdviYear, Project, DMRVStep } from "@/data/projects"
 
 export interface NewProjectInput {
   name: string
@@ -14,6 +14,11 @@ export interface NewProjectInput {
   health: number
   risk: "SEVERE" | "LOW"
   aridity: number
+  ndvi: number | null
+  ndviHistory: NdviYear[]
+  soilMoistureIndex: number | null
+  surfaceTempC: number
+  albedoEffect: number
 }
 
 const DEFAULT_DMRV: DMRVStep[] = [
@@ -55,10 +60,6 @@ function formatArea(radiusM: number): string {
 
 export function buildNewProject(id: string, input: NewProjectInput): Project {
   const colors = healthTierColors(input.health)
-  // SoilGrids reports organic carbon in g/kg (same scale as the existing
-  // `carbon_soil` field) — organic matter % is conventionally ~1/10th of that.
-  const organicMatterPct = input.carbon_soil !== null ? Math.round((input.carbon_soil / 10) * 10) / 10 : null
-  const hasSoilData = input.ph !== null || input.carbon_soil !== null || input.nitrogen !== null
 
   return {
     id,
@@ -70,7 +71,7 @@ export function buildNewProject(id: string, input: NewProjectInput): Project {
     health: input.health,
     degrad: 100 - input.health,
     diff: input.risk === "SEVERE" ? "HIGH" : "LOW",
-    ndvi: null,
+    ndvi: input.ndvi,
     rainfall: input.rainfall,
     moisture: null,
     ph: input.ph,
@@ -92,19 +93,21 @@ export function buildNewProject(id: string, input: NewProjectInput): Project {
     recs: [],
     currentStep: 1,
     aoi: { lat: input.lat, lng: input.lng, radiusM: input.radiusM },
-    satellite: null,
+    satellite:
+      input.ndvi !== null
+        ? {
+            ndviScore: input.ndvi,
+            soilMoistureIndex: input.soilMoistureIndex ?? 0,
+            surfaceTempC: input.surfaceTempC,
+            albedoEffect: input.albedoEffect,
+            ndviHistory: input.ndviHistory,
+          }
+        : null,
     droneLogs: [],
-    soil: hasSoilData
-      ? {
-          npk: { nitrogen: input.nitrogen, phosphorus: null, potassium: null },
-          organicMatterPct,
-          salinityDS: null,
-          heavyMetalsDetected: null,
-          toxicityNotes: null,
-        }
-      : null,
-    microbiome: null,
-    prescription: null,
+    labReport: null,
+    rehabReport: null,
+    satelliteReport: null,
+    soilReport: null,
     kanban: [],
     resources: null,
     biomass: [],

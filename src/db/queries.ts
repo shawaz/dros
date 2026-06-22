@@ -3,6 +3,9 @@ import { db } from "./client"
 import { projectsTable } from "./schema"
 import { projectsData, type Project } from "@/data/projects"
 import type { RehabilitationReport } from "@/data/rehabilitation-report"
+import type { LabReport } from "@/data/lab-report"
+import type { SatelliteAssessmentReport } from "@/data/satellite-report"
+import type { SoilBioReport } from "@/data/soil-bio-report"
 
 type ProjectRow = typeof projectsTable.$inferSelect
 
@@ -41,14 +44,15 @@ function rowToProject(row: ProjectRow): Project {
     aoi: row.aoi,
     satellite: row.satellite ?? null,
     droneLogs: row.droneLogs,
-    soil: row.soil ?? null,
-    microbiome: row.microbiome ?? null,
+    labReport: row.labReport ?? null,
     rehabReport: row.rehabReport ?? null,
     kanban: row.kanban,
     resources: row.resources ?? null,
     biomass: row.biomass,
     dmrv: row.dmrv,
     carbonSequesteredTons: row.carbonSequesteredTons,
+    satelliteReport: row.satelliteReport ?? null,
+    soilReport: row.soilReport ?? null,
   }
 }
 
@@ -87,14 +91,15 @@ function projectToRow(project: Project) {
     aoi: project.aoi,
     satellite: project.satellite,
     droneLogs: project.droneLogs,
-    soil: project.soil,
-    microbiome: project.microbiome,
+    labReport: project.labReport,
     rehabReport: project.rehabReport,
     kanban: project.kanban,
     resources: project.resources,
     biomass: project.biomass,
     dmrv: project.dmrv,
     carbonSequesteredTons: project.carbonSequesteredTons,
+    satelliteReport: project.satelliteReport,
+    soilReport: project.soilReport,
   }
 }
 
@@ -124,6 +129,21 @@ export function insertProject(project: Project): Project {
 
 export function updateProjectRehabReport(id: string, report: RehabilitationReport): Project | null {
   db.update(projectsTable).set({ rehabReport: report }).where(eq(projectsTable.id, id)).run()
+  return getProject(id)
+}
+
+export function updateProjectLabReport(id: string, report: LabReport): Project | null {
+  db.update(projectsTable).set({ labReport: report }).where(eq(projectsTable.id, id)).run()
+  return getProject(id)
+}
+
+export function updateProjectSatelliteReport(id: string, report: SatelliteAssessmentReport): Project | null {
+  db.update(projectsTable).set({ satelliteReport: report }).where(eq(projectsTable.id, id)).run()
+  return getProject(id)
+}
+
+export function updateProjectSoilReport(id: string, report: SoilBioReport): Project | null {
+  db.update(projectsTable).set({ soilReport: report }).where(eq(projectsTable.id, id)).run()
   return getProject(id)
 }
 

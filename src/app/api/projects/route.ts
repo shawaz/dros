@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { listProjects, insertProject, nextProjectId } from "@/db/queries"
 import { buildNewProject, type NewProjectInput } from "@/lib/new-project"
+import { estimateSurfaceMetrics } from "@/lib/site-data"
 
 export const runtime = "nodejs"
 
@@ -26,6 +27,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 })
   }
 
+  const ndvi = body.ndvi ?? null
+  const surfaceMetrics = estimateSurfaceMetrics({ aridity: body.aridity, ndviScore: ndvi })
+
   const id = nextProjectId()
   const project = buildNewProject(id, {
     name: body.name,
@@ -41,6 +45,11 @@ export async function POST(request: NextRequest) {
     health: body.health,
     risk: body.risk,
     aridity: body.aridity,
+    ndvi,
+    ndviHistory: body.ndviHistory ?? [],
+    soilMoistureIndex: body.soilMoistureIndex ?? null,
+    surfaceTempC: surfaceMetrics.surfaceTempC,
+    albedoEffect: surfaceMetrics.albedoEffect,
   })
   insertProject(project)
 

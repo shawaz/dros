@@ -7,7 +7,7 @@ import { ProcessStepper } from "./ProcessStepper"
 import { SatelliteAssessmentModule } from "./modules/SatelliteAssessmentModule"
 import { DroneSurveyModule } from "./modules/DroneSurveyModule"
 import { ChemicalBiologicalModule } from "./modules/ChemicalBiologicalModule"
-import { AIRehabilitationModule } from "./modules/AIRehabilitationModule"
+import { RehabilitationReportModule } from "./modules/rehab-report/RehabilitationReportModule"
 import { FieldExecutionModule } from "./modules/FieldExecutionModule"
 import { MonitoringCarbonModule } from "./modules/MonitoringCarbonModule"
 import { useToast } from "@/context/ToastContext"
@@ -25,7 +25,7 @@ const MODULES: Record<number, React.ComponentType<ModuleProps>> = {
   1: SatelliteAssessmentModule,
   2: DroneSurveyModule,
   3: ChemicalBiologicalModule,
-  4: AIRehabilitationModule,
+  4: RehabilitationReportModule,
   5: FieldExecutionModule,
   6: MonitoringCarbonModule,
 }

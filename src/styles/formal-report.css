@@ -1,0 +1,1119 @@
+/*
+ * Scoped styling for the AI-generated Rehabilitation Report module.
+ * Deliberately distinct from the dashboard's design system (paper +
+ * serif + mono, vs. the app's sans-serif card UI) — every rule is
+ * namespaced under .rx-report so it cannot bleed into other modules.
+ */
+
+.rx-report {
+  --rx-paper: #FBFAF7;
+  --rx-ink: #1C1B19;
+  --rx-ink2: #3A3833;
+  --rx-muted: #6B6860;
+  --rx-dim: #93908A;
+  --rx-border: #E3E0D8;
+  --rx-border2: #D2CEC3;
+  --rx-green: #2E6B45;
+  --rx-green-lt: #E7F0E5;
+  --rx-green-mid: #4C8B61;
+  --rx-amber: #9A6B16;
+  --rx-amber-lt: #F6EEDB;
+  --rx-red: #A23E2E;
+  --rx-red-lt: #F5E6E1;
+  --rx-blue: #2D5C8A;
+  --rx-blue-lt: #E6EDF4;
+  --rx-purple: #5E4B8A;
+  --rx-purple-lt: #ECE7F4;
+  --rx-serif: var(--font-rx-serif), Georgia, "Times New Roman", serif;
+  --rx-sans: var(--font-geist-sans), -apple-system, sans-serif;
+  --rx-mono: var(--font-rx-mono), "SF Mono", monospace;
+
+  background: var(--rx-paper);
+  color: var(--rx-ink);
+  font-family: var(--rx-sans);
+  border: 1px solid var(--rx-border2);
+  border-radius: 14px;
+  max-width: 880px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.rx-report * {
+  box-sizing: border-box;
+}
+
+.rx-report .rx-body {
+  padding: 0 44px 56px;
+}
+
+/* ---------- Cover ---------- */
+
+.rx-report .rx-cover {
+  padding: 40px 44px 28px;
+  border-bottom: 2px solid var(--rx-ink);
+}
+
+.rx-report .rx-cover-kicker {
+  font-family: var(--rx-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rx-muted);
+  margin-bottom: 10px;
+}
+
+.rx-report .rx-cover-title {
+  font-family: var(--rx-serif);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0 0 6px;
+}
+
+.rx-report .rx-cover-sub {
+  font-size: 14px;
+  color: var(--rx-ink2);
+  margin-bottom: 18px;
+}
+
+.rx-report .rx-cover-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.rx-report .rx-cover-meta-item dt {
+  font-family: var(--rx-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rx-dim);
+  margin-bottom: 3px;
+}
+
+.rx-report .rx-cover-meta-item dd {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rx-ink);
+  margin: 0;
+}
+
+.rx-report .rx-classification {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--rx-red-lt);
+  color: var(--rx-red);
+  border: 1px solid color-mix(in srgb, var(--rx-red) 30%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- KPI strip ---------- */
+
+.rx-report .rx-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--rx-border);
+}
+
+.rx-report .rx-kpi {
+  padding: 18px 20px;
+  border-right: 1px solid var(--rx-border);
+}
+
+.rx-report .rx-kpi:last-child {
+  border-right: none;
+}
+
+.rx-report .rx-kpi-label {
+  font-family: var(--rx-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rx-dim);
+  margin-bottom: 6px;
+}
+
+.rx-report .rx-kpi-value {
+  font-family: var(--rx-serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--rx-ink);
+  line-height: 1.1;
+}
+
+.rx-report .rx-kpi-value.rx-kpi-critical {
+  color: var(--rx-red);
+}
+
+/* ---------- Sections ---------- */
+
+.rx-report .rx-section {
+  padding-top: 36px;
+}
+
+.rx-report .rx-section-num {
+  font-family: var(--rx-mono);
+  font-size: 11px;
+  color: var(--rx-green-mid);
+  margin-bottom: 4px;
+}
+
+.rx-report .rx-section-title {
+  font-family: var(--rx-serif);
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rx-border);
+}
+
+.rx-report .rx-section-intro {
+  font-size: 13px;
+  color: var(--rx-muted);
+  margin: 10px 0 18px;
+  line-height: 1.6;
+}
+
+.rx-report .rx-subhead {
+  font-family: var(--rx-serif);
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 22px 0 10px;
+  color: var(--rx-ink2);
+}
+
+.rx-report .rx-subhead:first-child {
+  margin-top: 0;
+}
+
+/* ---------- Data tables ---------- */
+
+.rx-report .rx-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-bottom: 8px;
+}
+
+.rx-report .rx-data-table th {
+  text-align: left;
+  font-family: var(--rx-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rx-dim);
+  padding: 0 10px 8px 0;
+  border-bottom: 1px solid var(--rx-border2);
+  font-weight: 500;
+}
+
+.rx-report .rx-data-table td {
+  padding: 9px 10px 9px 0;
+  border-bottom: 1px solid var(--rx-border);
+  color: var(--rx-ink2);
+  vertical-align: top;
+}
+
+.rx-report .rx-data-table td.rx-mono-cell {
+  font-family: var(--rx-mono);
+  color: var(--rx-ink);
+}
+
+.rx-report .rx-data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rx-report .rx-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: var(--rx-mono);
+  white-space: nowrap;
+}
+
+.rx-report .rx-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.rx-report .rx-status.rx-s-ok {
+  background: var(--rx-green-lt);
+  color: var(--rx-green);
+}
+
+.rx-report .rx-status.rx-s-warn {
+  background: var(--rx-amber-lt);
+  color: var(--rx-amber);
+}
+
+.rx-report .rx-status.rx-s-critical {
+  background: var(--rx-red-lt);
+  color: var(--rx-red);
+}
+
+.rx-report .rx-status.rx-s-info {
+  background: var(--rx-blue-lt);
+  color: var(--rx-blue);
+}
+
+/* ---------- Priority ranking ---------- */
+
+.rx-report .rx-severity-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--rx-border);
+}
+
+.rx-report .rx-severity-strip.rx-p-critical {
+  background: var(--rx-red-lt);
+  border-color: color-mix(in srgb, var(--rx-red) 25%, transparent);
+}
+
+.rx-report .rx-severity-strip.rx-p-required {
+  background: var(--rx-amber-lt);
+  border-color: color-mix(in srgb, var(--rx-amber) 25%, transparent);
+}
+
+.rx-report .rx-severity-rank {
+  font-family: var(--rx-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--rx-ink2);
+  min-width: 26px;
+}
+
+.rx-report .rx-severity-body {
+  flex: 1;
+}
+
+.rx-report .rx-severity-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--rx-ink);
+  margin-bottom: 4px;
+}
+
+.rx-report .rx-severity-meta {
+  font-size: 12px;
+  color: var(--rx-ink2);
+  line-height: 1.55;
+}
+
+.rx-report .rx-severity-meta b {
+  color: var(--rx-ink);
+  font-weight: 600;
+}
+
+/* ---------- Treatment plan ---------- */
+
+.rx-report .rx-gate {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--rx-blue-lt);
+  border: 1px solid color-mix(in srgb, var(--rx-blue) 25%, transparent);
+  margin-bottom: 10px;
+  font-size: 12.5px;
+}
+
+.rx-report .rx-gate-label {
+  font-family: var(--rx-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rx-blue);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rx-report .rx-gate-desc {
+  color: var(--rx-ink2);
+}
+
+.rx-report .rx-step {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rx-border);
+  font-size: 13px;
+  align-items: baseline;
+}
+
+.rx-report .rx-step:last-child {
+  border-bottom: none;
+}
+
+.rx-report .rx-step::before {
+  content: "—";
+  color: var(--rx-dim);
+}
+
+.rx-report .rx-step-desc {
+  flex: 1;
+  color: var(--rx-ink2);
+}
+
+.rx-report .rx-dose {
+  font-family: var(--rx-mono);
+  font-size: 11.5px;
+  color: var(--rx-green);
+  background: var(--rx-green-lt);
+  padding: 1px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ---------- Species cards ---------- */
+
+.rx-report .rx-species-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.rx-report .rx-species-card {
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative;
+}
+
+.rx-report .rx-species-rank {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-family: var(--rx-mono);
+  font-size: 10px;
+  color: var(--rx-dim);
+}
+
+.rx-report .rx-species-name {
+  font-family: var(--rx-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--rx-ink);
+}
+
+.rx-report .rx-species-latin {
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--rx-muted);
+  margin-bottom: 8px;
+}
+
+.rx-report .rx-species-role {
+  display: inline-block;
+  font-family: var(--rx-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rx-green);
+  background: var(--rx-green-lt);
+  padding: 2px 8px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+.rx-report .rx-species-desc {
+  font-size: 12px;
+  color: var(--rx-ink2);
+  line-height: 1.55;
+}
+
+/* ---------- Timeline ---------- */
+
+.rx-report .rx-phase-tl {
+  position: relative;
+  padding-left: 26px;
+}
+
+.rx-report .rx-phase-tl::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--rx-border2);
+}
+
+.rx-report .rx-phase {
+  position: relative;
+  padding-bottom: 22px;
+}
+
+.rx-report .rx-phase:last-child {
+  padding-bottom: 0;
+}
+
+.rx-report .rx-phase-dot {
+  position: absolute;
+  left: -26px;
+  top: 4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--rx-paper);
+  box-shadow: 0 0 0 1px currentColor;
+}
+
+.rx-report .rx-phase-dot.rx-dot-red { color: var(--rx-red); background: var(--rx-red); }
+.rx-report .rx-phase-dot.rx-dot-amber { color: var(--rx-amber); background: var(--rx-amber); }
+.rx-report .rx-phase-dot.rx-dot-blue { color: var(--rx-blue); background: var(--rx-blue); }
+.rx-report .rx-phase-dot.rx-dot-green { color: var(--rx-green); background: var(--rx-green); }
+.rx-report .rx-phase-dot.rx-dot-purple { color: var(--rx-purple); background: var(--rx-purple); }
+
+.rx-report .rx-phase-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.rx-report .rx-phase-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--rx-ink);
+}
+
+.rx-report .rx-phase-range {
+  font-family: var(--rx-mono);
+  font-size: 11px;
+  color: var(--rx-dim);
+}
+
+.rx-report .rx-phase-cost {
+  font-family: var(--rx-mono);
+  font-size: 11.5px;
+  color: var(--rx-green);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.rx-report .rx-phase-desc {
+  font-size: 12.5px;
+  color: var(--rx-ink2);
+  line-height: 1.55;
+}
+
+/* ---------- Procurement total banner ---------- */
+
+.rx-report .rx-proc-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--rx-ink);
+  color: var(--rx-paper);
+}
+
+.rx-report .rx-proc-total-label {
+  font-size: 12.5px;
+  opacity: 0.75;
+}
+
+.rx-report .rx-proc-total-value {
+  font-family: var(--rx-mono);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* ---------- Sign-off ---------- */
+
+.rx-report .rx-signoff {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 2px solid var(--rx-ink);
+}
+
+.rx-report .rx-sig-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 28px;
+}
+
+.rx-report .rx-sig-line {
+  border-bottom: 1px solid var(--rx-ink2);
+  height: 36px;
+}
+
+.rx-report .rx-sig-caption {
+  font-family: var(--rx-mono);
+  font-size: 10.5px;
+  color: var(--rx-dim);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rx-report .rx-disclaimer {
+  margin-top: 22px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--rx-border, #F3F1EC);
+  background: color-mix(in srgb, var(--rx-border) 35%, transparent);
+  font-size: 11px;
+  color: var(--rx-muted);
+  line-height: 1.6;
+}
+
+/* ---------- Toolbar / generation states ---------- */
+
+.rx-report-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* ---------- Indicator bars ---------- */
+
+.rx-report .rx-ind-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rx-border);
+}
+
+.rx-report .rx-ind-row:last-child {
+  border-bottom: none;
+}
+
+.rx-report .rx-ind-name {
+  font-size: 12.5px;
+  color: var(--rx-ink);
+  font-weight: 500;
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.rx-report .rx-ind-bar {
+  flex: 1;
+  height: 7px;
+  background: var(--rx-border);
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 200px;
+}
+
+.rx-report .rx-ind-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.rx-report .rx-ind-val {
+  font-family: var(--rx-mono);
+  font-size: 11.5px;
+  color: var(--rx-ink);
+  width: 56px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ---------- KPI strip variants ---------- */
+
+.rx-report .rx-kpi-strip-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-bottom: 1px solid var(--rx-border);
+}
+
+/* ---------- Gauge row ---------- */
+
+.rx-report .rx-gauge-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.rx-report .rx-gauge {
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.rx-report .rx-gauge-label {
+  font-family: var(--rx-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rx-dim);
+  margin-bottom: 4px;
+}
+
+.rx-report .rx-gauge-sub {
+  font-size: 11px;
+  color: var(--rx-muted);
+  margin-top: 4px;
+}
+
+/* ---------- Risk band ---------- */
+
+.rx-report .rx-risk-band {
+  border: 1px solid var(--rx-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.rx-report .rx-risk-bar {
+  height: 10px;
+  display: flex;
+}
+
+.rx-report .rx-risk-seg {
+  flex: 1;
+  position: relative;
+}
+
+.rx-report .rx-risk-marker {
+  position: absolute;
+  top: -4px;
+  width: 3px;
+  height: 18px;
+  background: var(--rx-ink);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.rx-report .rx-risk-labels {
+  display: flex;
+  padding: 6px 12px 8px;
+  font-family: var(--rx-mono);
+  font-size: 9.5px;
+  color: var(--rx-dim);
+}
+
+.rx-report .rx-risk-labels span {
+  flex: 1;
+}
+
+/* ---------- Monthly trend strip ---------- */
+
+.rx-report .rx-month-strip {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.rx-report .rx-month-cell {
+  height: 30px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--rx-mono);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.rx-report .rx-month-labels {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 3px;
+  margin-bottom: 16px;
+}
+
+.rx-report .rx-month-labels span {
+  font-family: var(--rx-mono);
+  font-size: 9px;
+  color: var(--rx-dim);
+  text-align: center;
+}
+
+/* ---------- Recommendation cards ---------- */
+
+.rx-report .rx-rec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.rx-report .rx-rec-card {
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.rx-report .rx-rec-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.rx-report .rx-rec-card.rx-rec-immediate::before { background: var(--rx-red); }
+.rx-report .rx-rec-card.rx-rec-30days::before { background: var(--rx-amber); }
+.rx-report .rx-rec-card.rx-rec-planning::before { background: var(--rx-blue); }
+
+.rx-report .rx-rec-urgency {
+  font-family: var(--rx-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.rx-report .rx-rec-card.rx-rec-immediate .rx-rec-urgency { color: var(--rx-red); }
+.rx-report .rx-rec-card.rx-rec-30days .rx-rec-urgency { color: var(--rx-amber); }
+.rx-report .rx-rec-card.rx-rec-planning .rx-rec-urgency { color: var(--rx-blue); }
+
+.rx-report .rx-rec-title {
+  font-family: var(--rx-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--rx-ink);
+  margin-bottom: 6px;
+}
+
+.rx-report .rx-rec-body {
+  font-size: 12px;
+  color: var(--rx-ink2);
+  line-height: 1.6;
+}
+
+/* ---------- Assessment blocks (findings) ---------- */
+
+.rx-report .rx-assess-block {
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.rx-report .rx-assess-block.rx-assess-critical {
+  border-color: color-mix(in srgb, var(--rx-red) 40%, transparent);
+  border-left: 4px solid var(--rx-red);
+}
+
+.rx-report .rx-assess-block.rx-assess-required {
+  border-color: color-mix(in srgb, var(--rx-amber) 40%, transparent);
+  border-left: 4px solid var(--rx-amber);
+}
+
+.rx-report .rx-assess-block.rx-assess-positive {
+  border-color: color-mix(in srgb, var(--rx-green) 40%, transparent);
+  border-left: 4px solid var(--rx-green);
+}
+
+.rx-report .rx-assess-header {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--rx-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rx-report .rx-assess-block.rx-assess-critical .rx-assess-header { background: var(--rx-red-lt); }
+.rx-report .rx-assess-block.rx-assess-required .rx-assess-header { background: var(--rx-amber-lt); }
+.rx-report .rx-assess-block.rx-assess-positive .rx-assess-header { background: var(--rx-green-lt); }
+
+.rx-report .rx-assess-title {
+  font-family: var(--rx-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--rx-ink);
+}
+
+.rx-report .rx-assess-block.rx-assess-critical .rx-assess-title { color: var(--rx-red); }
+.rx-report .rx-assess-block.rx-assess-required .rx-assess-title { color: var(--rx-amber); }
+.rx-report .rx-assess-block.rx-assess-positive .rx-assess-title { color: var(--rx-green); }
+
+.rx-report .rx-assess-body {
+  padding: 10px 18px;
+}
+
+.rx-report .rx-assess-finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rx-border);
+  font-size: 12.5px;
+  color: var(--rx-ink2);
+  line-height: 1.6;
+}
+
+.rx-report .rx-assess-finding:last-child {
+  border-bottom: none;
+}
+
+.rx-report .rx-assess-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+/* ---------- Microbial / species chip grid ---------- */
+
+.rx-report .rx-microbe-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.rx-report .rx-microbe-chip {
+  border: 1px solid var(--rx-border);
+  border-radius: 8px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.rx-report .rx-microbe-name {
+  font-family: var(--rx-serif);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--rx-ink);
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.rx-report .rx-microbe-func {
+  font-size: 9.5px;
+  color: var(--rx-muted);
+  line-height: 1.3;
+}
+
+.rx-report .rx-microbe-bar {
+  height: 3px;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+/* ---------- Soil profile ---------- */
+
+.rx-report .rx-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.rx-report .rx-profile-col {
+  padding: 16px;
+  border-right: 1px solid var(--rx-border);
+  text-align: center;
+}
+
+.rx-report .rx-profile-col:last-child {
+  border-right: none;
+}
+
+.rx-report .rx-profile-depth {
+  font-family: var(--rx-mono);
+  font-size: 9.5px;
+  color: var(--rx-muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
+
+.rx-report .rx-profile-swatch {
+  width: 100%;
+  height: 36px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.rx-report .rx-profile-param {
+  font-size: 11px;
+  color: var(--rx-ink2);
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.rx-report .rx-profile-val {
+  font-family: var(--rx-mono);
+  font-size: 10px;
+  color: var(--rx-muted);
+}
+
+/* ---------- Water cards ---------- */
+
+.rx-report .rx-water-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.rx-report .rx-water-card {
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.rx-report .rx-water-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.rx-report .rx-water-val {
+  font-family: var(--rx-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--rx-ink);
+  margin-bottom: 2px;
+}
+
+.rx-report .rx-water-label {
+  font-size: 11px;
+  color: var(--rx-muted);
+  margin-bottom: 8px;
+}
+
+/* ---------- Carbon gauge ---------- */
+
+.rx-report .rx-carbon-gauge {
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  padding: 22px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.rx-report .rx-carbon-gauge-data {
+  flex: 1;
+}
+
+.rx-report .rx-carbon-gauge-title {
+  font-family: var(--rx-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rx-ink);
+  margin-bottom: 12px;
+}
+
+/* ---------- Next doc CTA ---------- */
+
+.rx-report .rx-next-doc {
+  background: var(--rx-ink);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-top: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rx-report .rx-next-doc-label {
+  font-family: var(--rx-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 5px;
+}
+
+.rx-report .rx-next-doc-title {
+  font-family: var(--rx-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.rx-report .rx-next-doc-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.rx-report .rx-next-doc-badge {
+  font-family: var(--rx-mono);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+@media (max-width: 760px) {
+  .rx-report .rx-cover-meta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .rx-report .rx-kpi-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .rx-report .rx-kpi-strip-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .rx-report .rx-species-grid {
+    grid-template-columns: 1fr;
+  }
+  .rx-report .rx-sig-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .rx-report .rx-rec-grid {
+    grid-template-columns: 1fr;
+  }
+  .rx-report .rx-gauge-row {
+    grid-template-columns: 1fr;
+  }
+  .rx-report .rx-water-grid {
+    grid-template-columns: 1fr;
+  }
+  .rx-report .rx-microbe-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .rx-report .rx-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .rx-report-toolbar {
+    display: none;
+  }
+  .rx-report {
+    border: none;
+    max-width: none;
+  }
+}
