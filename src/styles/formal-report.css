@@ -1117,3 +1117,165 @@
     max-width: none;
   }
 }
+
+/* ============================================================
+   Full-page report layout  (.rl-*)
+   Used by /projects/[id]/satellite-report, /soil-report, /report
+   ============================================================ */
+
+.rl-page {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  align-items: start;
+  /* escape the DashboardShell's p-6 px-7 padding */
+  margin: -24px -28px;
+  min-height: 100vh;
+}
+
+/* Sidebar TOC */
+.rl-toc {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: #ffffff;
+  color: #1C1B19;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #E5E7EB;
+}
+
+.rl-toc-type {
+  padding: 20px 20px 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9CA3AF;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.rl-toc-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.rl-toc-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 20px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  font-size: 12px;
+  color: #6B7280;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.rl-toc-link:hover {
+  background: #F9FAFB;
+  color: #111827;
+}
+
+.rl-toc-link.rl-active {
+  border-left-color: #4A7C59;
+  color: #1C1B19;
+  background: #F0F5F1;
+}
+
+.rl-toc-num {
+  font-size: 10px;
+  color: #D1D5DB;
+  min-width: 18px;
+  padding-top: 1px;
+  flex-shrink: 0;
+}
+
+.rl-toc-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #F3F4F6;
+  font-size: 10px;
+  color: #9CA3AF;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+
+/* Main content */
+.rl-main {
+  padding: 0;
+  background: #F3F4F6;
+}
+
+.rl-main .rx-report {
+  border: none;
+  border-radius: 0;
+  max-width: 860px;
+  margin: 40px auto 80px;
+  background: #ffffff;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+.rl-main .rx-report .rx-cover {
+  padding: 48px 56px 28px;
+}
+
+.rl-main .rx-report .rx-body {
+  padding: 0 56px 64px;
+}
+
+.rl-back-row {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 0 16px;
+}
+
+.rl-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #6B7280;
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(107, 114, 128, 0.06);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+  transition: background 0.1s;
+}
+
+.rl-back-link:hover {
+  background: rgba(107, 114, 128, 0.12);
+  color: #374151;
+}
+
+.rl-section {
+  scroll-margin-top: 16px;
+}
+
+@media print {
+  .rl-page {
+    display: block;
+    margin: 0;
+  }
+  .rl-toc { display: none; }
+  .rl-back-row { display: none; }
+  .rl-main { padding: 0; background: none; }
+  .rl-main .rx-report {
+    max-width: none;
+    margin: 0;
+    box-shadow: none;
+  }
+  .rl-main .rx-report .rx-cover {
+    padding: 40px 56px 28px;
+  }
+  .rl-main .rx-report .rx-body {
+    padding: 0 56px 56px;
+  }
+}

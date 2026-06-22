@@ -1,21 +1,13 @@
 "use client"
 
 import React, { useState } from "react"
-import { FileText, Loader2, Printer, RefreshCw } from "lucide-react"
+import Link from "next/link"
+import { FileText, Loader2, RefreshCw, ExternalLink } from "lucide-react"
 import { Project } from "@/data/projects"
 import { SoilBioReport } from "@/data/soil-bio-report"
 import { Button } from "@/components/ui/button"
-import "../../../../styles/formal-report.css"
-import { SoilBioReportHeader } from "./SoilBioReportHeader"
-import { SamplingSection } from "./SamplingSection"
-import { PhysicalSection } from "./PhysicalSection"
-import { ChemicalSection } from "./ChemicalSection"
-import { MicrobialSection } from "./MicrobialSection"
-import { CarbonSection } from "./CarbonSection"
-import { WaterSection } from "./WaterSection"
-import { SoilProfileSection } from "./SoilProfileSection"
-import { SatVsLabSection } from "./SatVsLabSection"
-import { FindingsSection } from "./FindingsSection"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface Props {
   project: Project
@@ -45,8 +37,6 @@ export const SoilBioReportModule: React.FC<Props> = ({ project, onProjectUpdate,
     }
   }
 
-  const lab = project.labReport
-
   if (!report) {
     return (
       <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
@@ -74,14 +64,28 @@ export const SoilBioReportModule: React.FC<Props> = ({ project, onProjectUpdate,
     )
   }
 
+  const date = new Date(report.generatedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
   return (
-    <div>
-      <div className="rx-report-toolbar">
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
-          <Printer className="w-3.5 h-3.5" />
-          Print Report
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generating}>
+    <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
+      <FileText className="w-6 h-6 text-green-custom" />
+      <h3 className="font-sans text-sm font-semibold text-ink">Soil & Biological Assessment Ready</h3>
+      <p className="text-xs text-muted-custom">
+        {report.reportId} · Generated {date}
+      </p>
+      <div className="flex gap-2 mt-2 flex-wrap justify-center">
+        <Link
+          href={`/projects/${project.id}/soil-report`}
+          className={cn(buttonVariants({ variant: "default" }))}
+        >
+          <ExternalLink className="w-4 h-4" />
+          View Full Report
+        </Link>
+        <Button variant="outline" onClick={handleGenerate} disabled={generating}>
           {generating ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
@@ -90,48 +94,6 @@ export const SoilBioReportModule: React.FC<Props> = ({ project, onProjectUpdate,
           Regenerate
         </Button>
       </div>
-
-      <article className="rx-report">
-        <SoilBioReportHeader project={project} report={report} />
-        <div className="rx-body">
-          <SamplingSection project={project} />
-          {lab?.physical && (
-            <PhysicalSection
-              physical={lab.physical}
-              narrative={report.physicalNarrative}
-              findings={report.physicalFindings}
-            />
-          )}
-          {lab?.chemical && (
-            <ChemicalSection
-              chemical={lab.chemical}
-              narrative={report.chemicalNarrative}
-              findings={report.chemicalFindings}
-            />
-          )}
-          <MicrobialSection
-            microbialAssessment={report.microbialAssessment}
-            detectedMicrobes={report.detectedMicrobes}
-            narrative={report.microbialNarrative}
-            findings={report.microbialFindings}
-          />
-          <CarbonSection carbon={report.carbon} />
-          {lab?.water && (
-            <WaterSection water={lab.water} narrative={report.waterNarrative} />
-          )}
-          <SoilProfileSection soilProfile={report.soilProfile} />
-          <SatVsLabSection
-            satVsLab={report.satVsLab}
-            calibrationSummary={report.calibrationSummary}
-          />
-          <FindingsSection
-            criticalFindings={report.criticalFindings}
-            requiredFindings={report.requiredFindings}
-            positiveFindings={report.positiveFindings}
-            projectId={project.id}
-          />
-        </div>
-      </article>
     </div>
   )
 }

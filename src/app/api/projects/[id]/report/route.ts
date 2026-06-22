@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getProject } from "@/db/queries"
+import { getProject, updateProjectRehabReport } from "@/db/queries"
 import { generateRehabilitationReport, isOpenRouterConfigured } from "@/lib/openrouter"
 import { DEMO_REHABILITATION_REPORT } from "@/data/rehab-report-demo"
 
@@ -17,18 +17,23 @@ export async function POST(
     return NextResponse.json({ available: false, reason: "project_not_found" }, { status: 404 })
   }
 
-  if (!isOpenRouterConfigured()) {
-    const report = { ...DEMO_REHABILITATION_REPORT, generatedAt: new Date().toISOString() }
-    return NextResponse.json({ available: true, project: { ...project, rehabReport: report } })
+  let report
+  if (isOpenRouterConfigured()) {
+    try {
+      report = await generateRehabilitationReport(project)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "openrouter_failed"
+      if (msg === "openrouter_not_configured") {
+        report = { ...DEMO_REHABILITATION_REPORT, generatedAt: new Date().toISOString() }
+      } else {
+        console.error("[rehab-report] OpenRouter error:", msg)
+        return NextResponse.json({ available: false, reason: msg }, { status: 502 })
+      }
+    }
+  } else {
+    report = { ...DEMO_REHABILITATION_REPORT, generatedAt: new Date().toISOString() }
   }
 
-  try {
-    const report = await generateRehabilitationReport(project)
-    return NextResponse.json({ available: true, project: { ...project, rehabReport: report } })
-  } catch (err) {
-    return NextResponse.json(
-      { available: false, reason: err instanceof Error ? err.message : "openrouter_failed" },
-      { status: 502 }
-    )
-  }
+  const updated = await updateProjectRehabReport(id, report!)
+  return NextResponse.json({ available: true, project: updated })
 }

@@ -1,19 +1,13 @@
 "use client"
 
 import React, { useState } from "react"
-import { FileText, Loader2, Printer, RefreshCw } from "lucide-react"
+import Link from "next/link"
+import { FileText, Loader2, RefreshCw, ExternalLink } from "lucide-react"
 import { Project } from "@/data/projects"
 import { SatelliteAssessmentReport } from "@/data/satellite-report"
 import { Button } from "@/components/ui/button"
-import "../../../../styles/formal-report.css"
-import { SatelliteReportHeader } from "./SatelliteReportHeader"
-import { VegetationSection } from "./VegetationSection"
-import { ClimateMoistureSection } from "./ClimateMoistureSection"
-import { SoilIndicatorsSection } from "./SoilIndicatorsSection"
-import { HealthScoreSection } from "./HealthScoreSection"
-import { TrendSection } from "./TrendSection"
-import { PriorityZonesSection } from "./PriorityZonesSection"
-import { RecommendationsSection } from "./RecommendationsSection"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface Props {
   project: Project
@@ -70,14 +64,28 @@ export const SatelliteReportModule: React.FC<Props> = ({ project, onProjectUpdat
     )
   }
 
+  const date = new Date(report.generatedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
   return (
-    <div>
-      <div className="rx-report-toolbar">
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
-          <Printer className="w-3.5 h-3.5" />
-          Print Report
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generating}>
+    <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
+      <FileText className="w-6 h-6 text-green-custom" />
+      <h3 className="font-sans text-sm font-semibold text-ink">Satellite Assessment Report Ready</h3>
+      <p className="text-xs text-muted-custom">
+        {report.reportId} · Generated {date}
+      </p>
+      <div className="flex gap-2 mt-2 flex-wrap justify-center">
+        <Link
+          href={`/projects/${project.id}/satellite-report`}
+          className={cn(buttonVariants({ variant: "default" }))}
+        >
+          <ExternalLink className="w-4 h-4" />
+          View Full Report
+        </Link>
+        <Button variant="outline" onClick={handleGenerate} disabled={generating}>
           {generating ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
@@ -86,34 +94,6 @@ export const SatelliteReportModule: React.FC<Props> = ({ project, onProjectUpdat
           Regenerate
         </Button>
       </div>
-
-      <article className="rx-report">
-        <SatelliteReportHeader project={project} report={report} />
-        <div className="rx-body">
-          <VegetationSection
-            ndviScore={project.ndvi ?? 0}
-            ndviDistribution={report.ndviDistribution}
-          />
-          <ClimateMoistureSection climateAssessment={report.climateAssessment} />
-          <SoilIndicatorsSection soilIndicators={report.soilIndicators} />
-          <HealthScoreSection
-            healthScore={project.health}
-            degradation={project.degrad}
-            riskLevel={report.riskLevel}
-            healthBreakdown={report.healthBreakdown}
-          />
-          <TrendSection
-            trendPeriods={report.trendPeriods}
-            trendSummary={report.trendSummary}
-          />
-          <PriorityZonesSection priorityZones={report.priorityZones} />
-          <RecommendationsSection
-            recommendations={report.recommendations}
-            treatmentSummary={report.treatmentSummary}
-            keyFindings={report.keyFindings}
-          />
-        </div>
-      </article>
     </div>
   )
 }

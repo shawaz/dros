@@ -1,40 +1,44 @@
 "use client"
 
 import React, { useState } from "react"
-import { FileText, Loader2, Printer, RefreshCw } from "lucide-react"
+import Link from "next/link"
+import { FileText, Loader2, RefreshCw, ExternalLink } from "lucide-react"
 import { Project } from "@/data/projects"
 import { RehabilitationReport } from "@/data/rehabilitation-report"
-import { DEMO_REHABILITATION_REPORT } from "@/data/rehab-report-demo"
 import { Button } from "@/components/ui/button"
-import "../../../../styles/formal-report.css"
-import { ReportHeader } from "./ReportHeader"
-import { SoilDiagnosticsSection } from "./SoilDiagnosticsSection"
-import { PriorityRankingSection } from "./PriorityRankingSection"
-import { TreatmentPlanSection } from "./TreatmentPlanSection"
-import { SpeciesSection } from "./SpeciesSection"
-import { TimelineSection } from "./TimelineSection"
-import { CarbonPathwaySection } from "./CarbonPathwaySection"
-import { MonitoringSection } from "./MonitoringSection"
-import { ProcurementSection } from "./ProcurementSection"
-import { SignoffSection } from "./SignoffSection"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface RehabilitationReportModuleProps {
   project: Project
+  onProjectUpdate?: (updated: Project) => void
   onToast: (msg: string) => void
 }
 
 export const RehabilitationReportModule: React.FC<RehabilitationReportModuleProps> = ({
   project,
+  onProjectUpdate,
+  onToast,
 }) => {
   const [report, setReport] = useState<RehabilitationReport | null>(project.rehabReport)
   const [generating, setGenerating] = useState(false)
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setGenerating(true)
-    window.setTimeout(() => {
-      setReport({ ...DEMO_REHABILITATION_REPORT, generatedAt: new Date().toISOString() })
+    try {
+      const res = await fetch(`/api/projects/${project.id}/report`, { method: "POST" })
+      const data = await res.json()
+      if (data.available && data.project?.rehabReport) {
+        setReport(data.project.rehabReport)
+        onProjectUpdate?.(data.project)
+      } else {
+        onToast(data.reason ?? "Failed to generate report")
+      }
+    } catch {
+      onToast("Network error generating report")
+    } finally {
       setGenerating(false)
-    }, 600)
+    }
   }
 
   if (!report) {
@@ -64,14 +68,28 @@ export const RehabilitationReportModule: React.FC<RehabilitationReportModuleProp
     )
   }
 
+  const date = new Date(report.generatedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
   return (
-    <div>
-      <div className="rx-report-toolbar">
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
-          <Printer className="w-3.5 h-3.5" />
-          Print Report
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generating}>
+    <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
+      <FileText className="w-6 h-6 text-green-custom" />
+      <h3 className="font-sans text-sm font-semibold text-ink">Rehabilitation Report Ready</h3>
+      <p className="text-xs text-muted-custom">
+        Generated {date}
+      </p>
+      <div className="flex gap-2 mt-2 flex-wrap justify-center">
+        <Link
+          href={`/projects/${project.id}/report`}
+          className={cn(buttonVariants({ variant: "default" }))}
+        >
+          <ExternalLink className="w-4 h-4" />
+          View Full Report
+        </Link>
+        <Button variant="outline" onClick={handleGenerate} disabled={generating}>
           {generating ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
@@ -80,34 +98,6 @@ export const RehabilitationReportModule: React.FC<RehabilitationReportModuleProp
           Regenerate
         </Button>
       </div>
-
-      <article className="rx-report">
-        <ReportHeader project={project} report={report} />
-        <div className="rx-body">
-          <SoilDiagnosticsSection
-            soilPhysical={report.soilPhysical}
-            soilChemical={report.soilChemical}
-            microbial={report.microbial}
-            detectedSpecies={report.detectedSpecies}
-            water={report.water}
-          />
-          <PriorityRankingSection priorityProblems={report.priorityProblems} />
-          <TreatmentPlanSection treatment={report.treatment} />
-          <SpeciesSection species={report.species} />
-          <TimelineSection timeline={report.timeline} totalCostSar={report.totalCostSar} />
-          <CarbonPathwaySection
-            carbonPathway={report.carbonPathway}
-            registrationSteps={report.registrationSteps}
-          />
-          <MonitoringSection monitoring={report.monitoring} />
-          <ProcurementSection
-            procurement={report.procurement}
-            procurementTotalLow={report.procurementTotalLow}
-            procurementTotalHigh={report.procurementTotalHigh}
-          />
-          <SignoffSection />
-        </div>
-      </article>
     </div>
   )
 }

@@ -219,7 +219,7 @@ export async function generateSatelliteReport(project: Project): Promise<Satelli
     console.error(`[satellite-report] top-level keys: ${topKeys.slice(0, 8).join(", ")}`)
   }
 
-  const report = parsed as SatelliteAssessmentReport
+  const report = parsed as unknown as SatelliteAssessmentReport
 
   // Splice actual measured values back in so AI estimates can't override them
   const sat = project.satellite!
