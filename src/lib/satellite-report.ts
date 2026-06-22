@@ -137,21 +137,37 @@ function buildSatellitePrompt(project: Project): string {
   return lines.join("\n")
 }
 
-const SYSTEM_PROMPT = `You are a senior remote sensing and land degradation scientist generating a formal satellite assessment report for the DROS platform (Saudi Arabia). You produce a single JSON object matching the provided schema exactly.
+const SYSTEM_PROMPT = `You are a senior remote sensing and land degradation scientist generating a formal satellite assessment report for the DROS platform (Saudi Arabia).
 
-Ground every measurement in the satellite data provided. The NDVI, soil moisture, surface temperature, and albedo values are ground truth from Sentinel-2 / SMAP — do not contradict them. Satellite-estimated values (pH, SOC) should be marked with ⚠ in the parameter name and given realistic confidence bounds.
+CRITICAL: You must output a single JSON object with EXACTLY these top-level keys — no more, no less:
+reportId, generatedAt, classification, riskLevel, riskLabel, ndviDistribution, trendPeriods, trendSummary, climateAssessment, soilIndicators, healthBreakdown, priorityZones, recommendations, treatmentSummary, keyFindings
 
-The NDVI distribution should reflect the actual NDVI score: e.g. if ndviScore is 0.075, the parcel is predominantly bare (<0.10). Generate 5 NDVI distribution rows summing to 100%.
+Schema per key:
+- reportId: string e.g. "DROS-SAT-2026-001"
+- generatedAt: ISO 8601 timestamp string
+- classification: string e.g. "Severely Degraded — Full Rehabilitation Required"
+- riskLevel: one of "low" | "moderate" | "high" | "severe"
+- riskLabel: string e.g. "Severe desertification risk — immediate intervention required"
+- ndviDistribution: array of {range:string, pct:number, status:"ok"|"warn"|"critical"|"info"} — 5 rows summing to 100%
+- trendPeriods: array of {period:string, meanNdvi:number, min:number, max:number, trend:"improving"|"marginal"|"flat"|"declining"}
+- trendSummary: string, 2–3 sentences on NDVI trend interpretation
+- climateAssessment: array of {parameter:string, value:string, assessment:string, status:"ok"|"warn"|"critical"|"info"}
+- soilIndicators: array of {parameter:string, estimate:string, confidence:string, fieldTestRequired:string, status:"ok"|"warn"|"critical"|"info"}
+- healthBreakdown: array of {name:string, value:string, scorePct:number, scoreLabel:string, status:"ok"|"warn"|"critical"|"info"}
+- priorityZones: array of {name:string, areaPct:number, areaHa:number, meanNdvi:number, bsi:number, priority:"immediate"|"high"|"moderate"|"protect", samplePointsRange:string} — 3–4 zones, areaPct values sum to 100
+- recommendations: array of {urgency:"immediate"|"30-days"|"planning", title:string, body:string}
+- treatmentSummary: array of {treatment:string, applicability:string, confidence:"high"|"pending"|"recommended"}
+- keyFindings: array of strings (bullet-point findings)
 
-For trendPeriods: derive from the NDVI history provided. Group by quarter or generate plausible quarterly periods based on the trend — values must be consistent with the ndviHistory data.
+Rules:
+- Ground every value in the satellite data provided — do not contradict measured NDVI, moisture, temperature, or albedo.
+- Satellite-estimated values (pH, SOC) must include ⚠ in the parameter name and realistic uncertainty bounds.
+- healthBreakdown vegetation scorePct = ndviScore × 100 (capped at 100).
+- priorityZones areaHa values must be consistent with the project total area.
+- trendPeriods must use the ndviHistory values provided.
+- Write in precise, technical, professional register — no marketing language.
 
-For priorityZones: generate 3–4 zones whose areaPct values sum to 100. Zone areas in hectares must be consistent with the project's total area.
-
-For healthBreakdown: scorePct for vegetation should equal ndviScore × 100 (capped at 100). Use the actual rainfall, soil moisture, and temperature values.
-
-Use SAR for any cost references. Write in precise, technical, professional register suitable for a formal remote sensing report — no marketing language.
-
-RETURN ONLY a valid JSON object matching the schema described. No markdown, no code fences, no explanation — raw JSON only.`
+RETURN ONLY the raw JSON object. No markdown, no code fences, no explanation, no wrapper keys.`
 
 export async function generateSatelliteReport(project: Project): Promise<SatelliteAssessmentReport> {
   if (!isSatelliteReportConfigured()) {
@@ -187,37 +203,52 @@ export async function generateSatelliteReport(project: Project): Promise<Satelli
 
   const content = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim()
 
-  let report: SatelliteAssessmentReport
+  let parsed: Record<string, unknown>
   try {
-    report = JSON.parse(content)
+    parsed = JSON.parse(content)
   } catch {
     throw new Error(`openrouter_invalid_json: ${content.slice(0, 200)}`)
   }
 
+  // If model wrapped output in a key (e.g. { report: {...} }), unwrap it
+  const topKeys = Object.keys(parsed)
+  if (topKeys.length === 1 && typeof parsed[topKeys[0]] === "object" && parsed[topKeys[0]] !== null) {
+    console.error(`[satellite-report] unwrapping top-level key: "${topKeys[0]}"`)
+    parsed = parsed[topKeys[0]] as Record<string, unknown>
+  } else {
+    console.error(`[satellite-report] top-level keys: ${topKeys.slice(0, 8).join(", ")}`)
+  }
+
+  const report = parsed as SatelliteAssessmentReport
+
   // Splice actual measured values back in so AI estimates can't override them
   const sat = project.satellite!
-  for (const row of report.healthBreakdown) {
-    if (row.name.toLowerCase().includes("vegetation") || row.name.toLowerCase().includes("ndvi")) {
-      row.value = sat.ndviScore.toFixed(3)
-      row.scorePct = Math.min(100, sat.ndviScore * 100)
-    } else if (row.name.toLowerCase().includes("moisture")) {
-      row.value = sat.soilMoistureIndex.toFixed(3)
-    } else if (row.name.toLowerCase().includes("heat") || row.name.toLowerCase().includes("temp")) {
-      row.value = `${sat.surfaceTempC.toFixed(1)}°C`
-    } else if (row.name.toLowerCase().includes("rainfall")) {
-      row.value = `${project.rainfall} mm`
+  if (Array.isArray(report.healthBreakdown)) {
+    for (const row of report.healthBreakdown) {
+      if (row.name.toLowerCase().includes("vegetation") || row.name.toLowerCase().includes("ndvi")) {
+        row.value = sat.ndviScore.toFixed(3)
+        row.scorePct = Math.min(100, sat.ndviScore * 100)
+      } else if (row.name.toLowerCase().includes("moisture")) {
+        row.value = sat.soilMoistureIndex.toFixed(3)
+      } else if (row.name.toLowerCase().includes("heat") || row.name.toLowerCase().includes("temp")) {
+        row.value = `${sat.surfaceTempC.toFixed(1)}°C`
+      } else if (row.name.toLowerCase().includes("rainfall")) {
+        row.value = `${project.rainfall} mm`
+      }
     }
   }
 
-  for (const row of report.climateAssessment) {
-    if (row.parameter.toLowerCase().includes("temperature") || row.parameter.toLowerCase().includes("lst")) {
-      row.value = `${sat.surfaceTempC.toFixed(1)}°C`
-    } else if (row.parameter.toLowerCase().includes("rainfall")) {
-      row.value = `${project.rainfall} mm/yr`
-    } else if (row.parameter.toLowerCase().includes("moisture")) {
-      row.value = sat.soilMoistureIndex.toFixed(3) + " m³/m³"
-    } else if (row.parameter.toLowerCase().includes("aridity")) {
-      row.value = `${project.aridity}`
+  if (Array.isArray(report.climateAssessment)) {
+    for (const row of report.climateAssessment) {
+      if (row.parameter.toLowerCase().includes("temperature") || row.parameter.toLowerCase().includes("lst")) {
+        row.value = `${sat.surfaceTempC.toFixed(1)}°C`
+      } else if (row.parameter.toLowerCase().includes("rainfall")) {
+        row.value = `${project.rainfall} mm/yr`
+      } else if (row.parameter.toLowerCase().includes("moisture")) {
+        row.value = sat.soilMoistureIndex.toFixed(3) + " m³/m³"
+      } else if (row.parameter.toLowerCase().includes("aridity")) {
+        row.value = `${project.aridity}`
+      }
     }
   }
 

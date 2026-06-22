@@ -175,21 +175,40 @@ function buildSoilBioPrompt(project: Project): string {
   return lines.join("\n")
 }
 
-const SYSTEM_PROMPT = `You are a senior soil scientist and agronomist generating a formal soil and biological assessment report for the DROS platform (Saudi Arabia). You produce a single JSON object matching the provided schema exactly.
+const SYSTEM_PROMPT = `You are a senior soil scientist and agronomist generating a formal soil and biological assessment report for the DROS platform (Saudi Arabia).
 
-Ground every section in the field lab data provided — this is ground truth from ISO 17025 certified laboratory analysis. Do not contradict measured values. Where satellite estimates differ from lab results, reflect this accurately in the satVsLab section.
+CRITICAL: You must output a single JSON object with EXACTLY these top-level keys — no more, no less:
+reportId, generatedAt, kpis, physicalNarrative, physicalFindings, chemicalNarrative, chemicalFindings, microbialAssessment, detectedMicrobes, microbialNarrative, microbialFindings, carbon, waterNarrative, soilProfile, satVsLab, calibrationSummary, criticalFindings, requiredFindings, positiveFindings
 
-The kpis should highlight the 4 most critical findings from the lab data (e.g. pH, EC, organic matter, mycorrhizae status). Use the actual measured values.
+Schema per key:
+- reportId: string e.g. "DROS-SBA-2026-001"
+- generatedAt: ISO 8601 timestamp string
+- kpis: array of {label:string, value:string, unit:string, color:"red"|"amber"|"green"|"blue"|"purple"} — 4 items highlighting critical findings
+- physicalNarrative: string, 2–3 sentences on physical soil condition
+- physicalFindings: array of strings (bullet-point findings)
+- chemicalNarrative: string, 2–3 sentences on chemical soil condition
+- chemicalFindings: array of strings
+- microbialAssessment: array of {parameter:string, result:string, status:"ok"|"warn"|"critical"|"info"}
+- detectedMicrobes: array of {species:string, function:string, action:string, statusColor:"green"|"amber"|"blue"|"red"}
+- microbialNarrative: string, 2–3 sentences on microbial ecosystem
+- microbialFindings: array of strings
+- carbon: object with keys {socPct:number, currentStockTco2eHa:number, targetStockMinTco2eHa:number, targetStockMaxTco2eHa:number, creditProjection:string, revenueProjectionMin:number, revenueProjectionMax:number}
+- waterNarrative: string, 1–2 sentences on water availability
+- soilProfile: array of {depthRange:string, ph:number, ecDsM:number, soc:string, bulkDensityGCm3:string, label:string, labelStatus:"ok"|"warn"|"critical"} — 3 depth layers
+- satVsLab: array of {parameter:string, satelliteEstimate:string, labResult:string, deviation:string, calibration:"accurate"|"recalibrate"|"within-range"|"now-quantified"|"lab-only"|"validated"}
+- calibrationSummary: array of strings
+- criticalFindings: array of strings (findings requiring immediate action)
+- requiredFindings: array of strings (required actions before planting)
+- positiveFindings: array of strings (positive indicators)
 
-The physicalNarrative, chemicalNarrative, and microbialNarrative should be precise, technical prose — not bullet points. Save the bullet-point format for the *Findings arrays.
+Rules:
+- Ground every section in the field lab data — this is ISO 17025 certified ground truth. Do not contradict measured values.
+- kpis must use actual measured values from the lab data.
+- physicalNarrative/chemicalNarrative/microbialNarrative must be prose paragraphs, not bullet points.
+- soilProfile: surface layer typically has higher salinity/pH from evaporative wicking; deeper layers have higher bulk density.
+- satVsLab: be specific about deviation percentage and whether recalibration is needed.
 
-For soilProfile: generate realistic depth stratification based on the provided data. Desert soils typically show increasing bulk density and decreasing SOC with depth, with surface salt concentration from evaporative wicking.
-
-For satVsLab: be specific about percentage deviation and whether recalibration is needed.
-
-Costs are in SAR. Write in precise, technical, professional register suitable for a formal laboratory report — no marketing language.
-
-RETURN ONLY a valid JSON object matching the schema described. No markdown, no code fences, no explanation — raw JSON only.`
+RETURN ONLY the raw JSON object. No markdown, no code fences, no explanation, no wrapper keys.`
 
 export async function generateSoilBioReport(project: Project): Promise<SoilBioReport> {
   if (!isSoilBioReportConfigured()) {

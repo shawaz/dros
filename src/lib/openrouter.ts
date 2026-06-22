@@ -194,15 +194,43 @@ function formatLabReportForPrompt(labReport: NonNullable<Project["labReport"]>):
   return lines
 }
 
-const SYSTEM_PROMPT = `You are a senior desert land restoration scientist generating a formal rehabilitation prescription report for the DROS platform (Saudi Arabia). You produce a single JSON object matching the provided schema exactly.
+const SYSTEM_PROMPT = `You are a senior desert land restoration scientist generating a formal rehabilitation prescription report for the DROS platform (Saudi Arabia).
 
-Ground every section in the project data you are given — do not contradict it. Where a value is missing ("not yet tested"/"not yet assessed"), treat that parameter as unknown rather than inventing a precise lab figure; reflect that gap honestly in the relevant table row (e.g. result "Pending lab sample") and don't let it block the rest of the report.
+CRITICAL: You must output a single JSON object with EXACTLY these top-level keys — no more, no less:
+classification, severitySummary, estimatedCostSar, timelineMonths, carbonPotentialTons, soilPhysical, soilChemical, microbial, detectedSpecies, water, priorityProblems, treatment, species, timeline, totalCostSar, carbonPathway, registrationSteps, monitoring, procurement, procurementTotalLow, procurementTotalHigh, generatedAt
 
-Prefer species from this reference list unless there is a clear ecological reason to deviate, and only ever recommend real, well-documented native arid-region species: ${NATIVE_SPECIES_REFERENCE}
+Schema per key:
+- classification: string e.g. "Severely Degraded — Full Rehabilitation Required"
+- severitySummary: string e.g. "CRITICAL — 5 of 6 parameters failed"
+- estimatedCostSar: number (total SAR cost for this parcel)
+- timelineMonths: number (months to carbon-credit eligibility)
+- carbonPotentialTons: number (estimated tCO2e credits)
+- soilPhysical: array of {parameter:string, result:string, optimal:string, status:"ok"|"warn"|"critical"}
+- soilChemical: array of {parameter:string, result:string, optimal:string, status:"ok"|"warn"|"critical"}
+- microbial: array of {parameter:string, result:string, status:"ok"|"warn"|"critical"|"info"}
+- detectedSpecies: array of {species:string, function:string, action:string}
+- water: array of {parameter:string, value:string, assessment:string}
+- priorityProblems: array of {rank:number, problem:string, evidence:string, consequence:string, priority:"critical"|"required"}
+- treatment: array of {title:string, gate:{label:string,description:string}|null, steps:[{description:string,dose:string|null}]}
+- species: array of {priorityRank:number, name:string, latinName:string, role:string, description:string}
+- timeline: array of {name:string, monthRange:string, cost:string, description:string, dotColor:"red"|"amber"|"blue"|"green"|"purple"}
+- totalCostSar: number
+- carbonPathway: array of {parameter:string, value:string, notes:string}
+- registrationSteps: array of {description:string}
+- monitoring: array of {measurement:string, method:string, frequency:string, target:string}
+- procurement: array of {item:string, spec:string, qty:string, costLow:number, costHigh:number, source:string}
+- procurementTotalLow: number
+- procurementTotalHigh: number
+- generatedAt: ISO 8601 timestamp string
 
-Costs, dosages, and the procurement total must be internally consistent — the timeline phase costs should roughly sum to the total cost, and the procurement low/high totals should roughly sum from the individual line items. Use SAR for all costs. Write in a precise, technical, professional register suitable for a formal lab/agronomy report — no marketing language.
+Rules:
+- Ground every section in the project data provided — do not contradict it.
+- Where a value is missing ("not yet tested"), reflect that gap honestly (e.g. result "Pending lab sample").
+- Prefer species from this list: ${NATIVE_SPECIES_REFERENCE}
+- Costs must be internally consistent. Use SAR for all costs.
+- Write in precise, technical, professional register — no marketing language.
 
-RETURN ONLY a valid JSON object matching the schema described. No markdown, no code fences, no explanation — raw JSON only.`
+RETURN ONLY the raw JSON object. No markdown, no code fences, no explanation, no wrapper keys.`
 
 export async function generateRehabilitationReport(project: Project): Promise<RehabilitationReport> {
   if (!isOpenRouterConfigured()) {
