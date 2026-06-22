@@ -5,7 +5,10 @@ import { drizzle } from "drizzle-orm/better-sqlite3"
 import { migrate } from "drizzle-orm/better-sqlite3/migrator"
 import * as schema from "./schema"
 
-const dataDir = path.join(process.cwd(), "data")
+// Vercel serverless: process.cwd() is read-only after build, so we use /tmp
+// which is writable but ephemeral (seeded from code on each cold start).
+// Locally, data/ persists across restarts as normal.
+const dataDir = process.env.VERCEL ? "/tmp" : path.join(process.cwd(), "data")
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true })
 }
