@@ -187,7 +187,9 @@ For soilProfile: generate realistic depth stratification based on the provided d
 
 For satVsLab: be specific about percentage deviation and whether recalibration is needed.
 
-Costs are in SAR. Write in precise, technical, professional register suitable for a formal laboratory report — no marketing language.`
+Costs are in SAR. Write in precise, technical, professional register suitable for a formal laboratory report — no marketing language.
+
+RETURN ONLY a valid JSON object matching the schema described. No markdown, no code fences, no explanation — raw JSON only.`
 
 export async function generateSoilBioReport(project: Project): Promise<SoilBioReport> {
   if (!isSoilBioReportConfigured()) {
@@ -206,14 +208,7 @@ export async function generateSoilBioReport(project: Project): Promise<SoilBioRe
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildSoilBioPrompt(project) },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "soil_bio_report",
-          strict: true,
-          schema: REPORT_SCHEMA,
-        },
-      },
+      response_format: { type: "json_object" },
     }),
     signal: AbortSignal.timeout(60_000),
   })

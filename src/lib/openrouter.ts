@@ -200,7 +200,9 @@ Ground every section in the project data you are given — do not contradict it.
 
 Prefer species from this reference list unless there is a clear ecological reason to deviate, and only ever recommend real, well-documented native arid-region species: ${NATIVE_SPECIES_REFERENCE}
 
-Costs, dosages, and the procurement total must be internally consistent — the timeline phase costs should roughly sum to the total cost, and the procurement low/high totals should roughly sum from the individual line items. Use SAR for all costs. Write in a precise, technical, professional register suitable for a formal lab/agronomy report — no marketing language.`
+Costs, dosages, and the procurement total must be internally consistent — the timeline phase costs should roughly sum to the total cost, and the procurement low/high totals should roughly sum from the individual line items. Use SAR for all costs. Write in a precise, technical, professional register suitable for a formal lab/agronomy report — no marketing language.
+
+RETURN ONLY a valid JSON object matching the schema described. No markdown, no code fences, no explanation — raw JSON only.`
 
 export async function generateRehabilitationReport(project: Project): Promise<RehabilitationReport> {
   if (!isOpenRouterConfigured()) {
@@ -219,14 +221,7 @@ export async function generateRehabilitationReport(project: Project): Promise<Re
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildPrompt(project) },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "rehabilitation_report",
-          strict: true,
-          schema: REPORT_SCHEMA,
-        },
-      },
+      response_format: { type: "json_object" },
     }),
     signal: AbortSignal.timeout(60_000),
   })

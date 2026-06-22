@@ -149,7 +149,9 @@ For priorityZones: generate 3–4 zones whose areaPct values sum to 100. Zone ar
 
 For healthBreakdown: scorePct for vegetation should equal ndviScore × 100 (capped at 100). Use the actual rainfall, soil moisture, and temperature values.
 
-Use SAR for any cost references. Write in precise, technical, professional register suitable for a formal remote sensing report — no marketing language.`
+Use SAR for any cost references. Write in precise, technical, professional register suitable for a formal remote sensing report — no marketing language.
+
+RETURN ONLY a valid JSON object matching the schema described. No markdown, no code fences, no explanation — raw JSON only.`
 
 export async function generateSatelliteReport(project: Project): Promise<SatelliteAssessmentReport> {
   if (!isSatelliteReportConfigured()) {
@@ -168,22 +170,13 @@ export async function generateSatelliteReport(project: Project): Promise<Satelli
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildSatellitePrompt(project) },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "satellite_assessment_report",
-          strict: true,
-          schema: REPORT_SCHEMA,
-        },
-      },
+      response_format: { type: "json_object" },
     }),
     signal: AbortSignal.timeout(60_000),
   })
 
   if (!res.ok) {
     const body = await res.text().catch(() => "")
-    const keyLen = process.env.OPENROUTER_API_KEY?.length ?? 0
-    console.error(`[satellite-report] key length in env: ${keyLen}, model: "${process.env.OPENROUTER_MODEL}"`)
     throw new Error(`openrouter_request_failed: ${res.status} ${body.slice(0, 500)}`)
   }
 
