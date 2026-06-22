@@ -7,17 +7,13 @@ import type { SatelliteMetrics } from "@/data/projects"
 export const runtime = "nodejs"
 export const maxDuration = 30
 
-// Not persisted — the deployed SQLite file is read-only at runtime (same
-// constraint as the rehab-report "Regenerate" action). Always recomputes
-// from live Sentinel Hub data and returns it; the client holds it in local
-// state only.
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
 
-  const project = getProject(id)
+  const project = await getProject(id)
   if (!project) {
     return NextResponse.json({ available: false, reason: "project_not_found" }, { status: 404 })
   }

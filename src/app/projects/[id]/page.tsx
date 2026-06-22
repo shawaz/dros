@@ -8,7 +8,7 @@ interface ProjectPageProps {
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return (

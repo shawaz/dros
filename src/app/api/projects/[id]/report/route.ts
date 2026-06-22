@@ -12,7 +12,7 @@ export async function POST(
 ) {
   const { id } = await params
 
-  const project = getProject(id)
+  const project = await getProject(id)
   if (!project) {
     return NextResponse.json({ available: false, reason: "project_not_found" }, { status: 404 })
   }

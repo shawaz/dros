@@ -32,9 +32,9 @@ export const Sidebar: React.FC = () => {
       <div className="flex items-center gap-2.5 p-5 pb-4 border-b border-white/10">
         <div className="w-[30px] h-[30px] rounded-lg bg-gradient-to-br from-green-custom to-[#1a5c38] flex items-center justify-center shrink-0">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 2C5 2 2.5 4.5 2.5 8c0 3 2.5 5.5 5.5 5.5S13.5 11 13.5 8c0-3-1.5-6-5.5-6Z" fill="white" opacity="0.9"/>
-            <line x1="8" y1="13.5" x2="8" y2="8" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
-            <path d="M8 8 L5.5 10.5" stroke="white" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+            <path d="M8 2C5 2 2.5 4.5 2.5 8c0 3 2.5 5.5 5.5 5.5S13.5 11 13.5 8c0-3-1.5-6-5.5-6Z" fill="white" opacity="0.9" />
+            <line x1="8" y1="13.5" x2="8" y2="8" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
+            <path d="M8 8 L5.5 10.5" stroke="white" strokeWidth="1" strokeLinecap="round" opacity="0.4" />
           </svg>
         </div>
         <div>
@@ -64,11 +64,10 @@ export const Sidebar: React.FC = () => {
       <nav className="flex flex-col gap-0.5">
         <Link
           href="/?tab=overview"
-          className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${
-            onOverview
+          className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${onOverview
               ? "bg-white/10 text-white font-medium"
               : "text-white/50 hover:bg-white/5 hover:text-white/80"
-          }`}
+            }`}
         >
           <LayoutDashboard className="w-4.5 h-4.5 opacity-70" />
           Overview
@@ -76,11 +75,10 @@ export const Sidebar: React.FC = () => {
 
         <Link
           href="/?tab=projects"
-          className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${
-            inProjectsSection
+          className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${inProjectsSection
               ? "bg-white/10 text-white font-medium"
               : "text-white/50 hover:bg-white/5 hover:text-white/80"
-          }`}
+            }`}
         >
           <Folder className="w-4.5 h-4.5 opacity-70" />
           <span>Projects</span>
@@ -91,17 +89,16 @@ export const Sidebar: React.FC = () => {
 
         <Link
           href="/?tab=analytics"
-          className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${
-            onAnalytics
+          className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${onAnalytics
               ? "bg-white/10 text-white font-medium"
               : "text-white/50 hover:bg-white/5 hover:text-white/80"
-          }`}
+            }`}
         >
           <TrendingUp className="w-4.5 h-4.5 opacity-70" />
           Analytics
         </Link>
 
-        <button
+        {/* <button
           onClick={() => showToast("🗺️ Map view coming soon")}
           className="flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left text-white/50 hover:bg-white/5 hover:text-white/80"
         >
@@ -115,7 +112,7 @@ export const Sidebar: React.FC = () => {
         >
           <FileText className="w-4.5 h-4.5 opacity-70" />
           Reports
-        </button>
+        </button> */}
       </nav>
 
       {/* Active Projects Label */}
@@ -137,8 +134,8 @@ export const Sidebar: React.FC = () => {
                 background: project.status === "active"
                   ? "linear-gradient(180deg,#2E8B57,#4CAF72)"
                   : project.id === "DROS-01"
-                  ? "linear-gradient(180deg,#C0392B,#E05C3A)"
-                  : "linear-gradient(180deg,#C9841A,#F0A830)",
+                    ? "linear-gradient(180deg,#C0392B,#E05C3A)"
+                    : "linear-gradient(180deg,#C9841A,#F0A830)",
               }}
             />
             <div className="flex-1 min-w-0">

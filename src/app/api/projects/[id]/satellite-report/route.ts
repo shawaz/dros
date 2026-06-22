@@ -12,7 +12,7 @@ export async function POST(
 ) {
   const { id } = await params
 
-  const project = getProject(id)
+  const project = await getProject(id)
   if (!project) {
     return NextResponse.json({ available: false, reason: "project_not_found" }, { status: 404 })
   }
@@ -38,6 +38,6 @@ export async function POST(
     report = { ...DEMO_SATELLITE_REPORT, generatedAt: new Date().toISOString() }
   }
 
-  const updated = updateProjectSatelliteReport(id, report)
+  const updated = await updateProjectSatelliteReport(id, report)
   return NextResponse.json({ available: true, project: updated })
 }

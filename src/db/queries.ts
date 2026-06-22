@@ -103,52 +103,53 @@ function projectToRow(project: Project) {
   }
 }
 
-function seedIfEmpty() {
-  const count = db.select().from(projectsTable).all().length
-  if (count > 0) return
+async function seedIfEmpty() {
+  const rows = await db.select().from(projectsTable).limit(1)
+  if (rows.length > 0) return
   for (const project of projectsData) {
-    db.insert(projectsTable).values(projectToRow(project)).run()
+    await db.insert(projectsTable).values(projectToRow(project))
   }
 }
 
-export function listProjects(): Project[] {
-  seedIfEmpty()
-  return db.select().from(projectsTable).all().map(rowToProject)
+export async function listProjects(): Promise<Project[]> {
+  await seedIfEmpty()
+  const rows = await db.select().from(projectsTable)
+  return rows.map(rowToProject)
 }
 
-export function getProject(id: string): Project | null {
-  seedIfEmpty()
-  const row = db.select().from(projectsTable).where(eq(projectsTable.id, id)).get()
-  return row ? rowToProject(row) : null
+export async function getProject(id: string): Promise<Project | null> {
+  await seedIfEmpty()
+  const row = await db.select().from(projectsTable).where(eq(projectsTable.id, id)).limit(1)
+  return row[0] ? rowToProject(row[0]) : null
 }
 
-export function insertProject(project: Project): Project {
-  db.insert(projectsTable).values(projectToRow(project)).run()
+export async function insertProject(project: Project): Promise<Project> {
+  await db.insert(projectsTable).values(projectToRow(project))
   return project
 }
 
-export function updateProjectRehabReport(id: string, report: RehabilitationReport): Project | null {
-  db.update(projectsTable).set({ rehabReport: report }).where(eq(projectsTable.id, id)).run()
+export async function updateProjectRehabReport(id: string, report: RehabilitationReport): Promise<Project | null> {
+  await db.update(projectsTable).set({ rehabReport: report }).where(eq(projectsTable.id, id))
   return getProject(id)
 }
 
-export function updateProjectLabReport(id: string, report: LabReport): Project | null {
-  db.update(projectsTable).set({ labReport: report }).where(eq(projectsTable.id, id)).run()
+export async function updateProjectLabReport(id: string, report: LabReport): Promise<Project | null> {
+  await db.update(projectsTable).set({ labReport: report }).where(eq(projectsTable.id, id))
   return getProject(id)
 }
 
-export function updateProjectSatelliteReport(id: string, report: SatelliteAssessmentReport): Project | null {
-  db.update(projectsTable).set({ satelliteReport: report }).where(eq(projectsTable.id, id)).run()
+export async function updateProjectSatelliteReport(id: string, report: SatelliteAssessmentReport): Promise<Project | null> {
+  await db.update(projectsTable).set({ satelliteReport: report }).where(eq(projectsTable.id, id))
   return getProject(id)
 }
 
-export function updateProjectSoilReport(id: string, report: SoilBioReport): Project | null {
-  db.update(projectsTable).set({ soilReport: report }).where(eq(projectsTable.id, id)).run()
+export async function updateProjectSoilReport(id: string, report: SoilBioReport): Promise<Project | null> {
+  await db.update(projectsTable).set({ soilReport: report }).where(eq(projectsTable.id, id))
   return getProject(id)
 }
 
-export function nextProjectId(): string {
-  const rows = db.select({ id: projectsTable.id }).from(projectsTable).all()
+export async function nextProjectId(): Promise<string> {
+  const rows = await db.select({ id: projectsTable.id }).from(projectsTable)
   const maxN = rows.reduce((max, row) => {
     const match = /^DROS-(\d+)$/.exec(row.id)
     return match ? Math.max(max, parseInt(match[1], 10)) : max

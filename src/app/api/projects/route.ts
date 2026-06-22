@@ -6,7 +6,7 @@ import { estimateSurfaceMetrics } from "@/lib/site-data"
 export const runtime = "nodejs"
 
 export async function GET() {
-  return NextResponse.json({ projects: listProjects() })
+  return NextResponse.json({ projects: await listProjects() })
 }
 
 export async function POST(request: NextRequest) {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   const ndvi = body.ndvi ?? null
   const surfaceMetrics = estimateSurfaceMetrics({ aridity: body.aridity, ndviScore: ndvi })
 
-  const id = nextProjectId()
+  const id = await nextProjectId()
   const project = buildNewProject(id, {
     name: body.name,
     region: body.region,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     surfaceTempC: surfaceMetrics.surfaceTempC,
     albedoEffect: surfaceMetrics.albedoEffect,
   })
-  insertProject(project)
+  await insertProject(project)
 
   return NextResponse.json({ project }, { status: 201 })
 }
