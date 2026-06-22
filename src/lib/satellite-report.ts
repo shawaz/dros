@@ -170,27 +170,28 @@ export async function generateSatelliteReport(project: Project): Promise<Satelli
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildSatellitePrompt(project) },
       ],
-      response_format: { type: "json_object" },
     }),
     signal: AbortSignal.timeout(60_000),
   })
 
   if (!res.ok) {
     const body = await res.text().catch(() => "")
-    throw new Error(`openrouter_request_failed: ${res.status} ${body.slice(0, 500)}`)
+    throw new Error(`openrouter_request_failed: ${res.status} ${body.slice(0, 800)}`)
   }
 
   const json = await res.json()
-  const content = json?.choices?.[0]?.message?.content
-  if (typeof content !== "string") {
+  const raw = json?.choices?.[0]?.message?.content
+  if (typeof raw !== "string") {
     throw new Error("openrouter_empty_response")
   }
+
+  const content = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim()
 
   let report: SatelliteAssessmentReport
   try {
     report = JSON.parse(content)
   } catch {
-    throw new Error("openrouter_invalid_json")
+    throw new Error(`openrouter_invalid_json: ${content.slice(0, 200)}`)
   }
 
   // Splice actual measured values back in so AI estimates can't override them
