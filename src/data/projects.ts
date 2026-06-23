@@ -2,6 +2,8 @@ import type { RehabilitationReport } from './rehabilitation-report'
 import type { LabReport } from './lab-report'
 import type { SatelliteAssessmentReport } from './satellite-report'
 import type { SoilBioReport } from './soil-bio-report'
+import type { BudgetReport } from './budget-report'
+import type { FieldExecutionReport } from './field-execution-report'
 
 export interface Phase {
   name: string
@@ -112,6 +114,8 @@ export interface Project {
   carbonSequesteredTons: number
   satelliteReport: SatelliteAssessmentReport | null
   soilReport: SoilBioReport | null
+  budgetReport: BudgetReport | null
+  fieldExecutionReport: FieldExecutionReport | null
 }
 
 export interface ActivityItem {
@@ -208,6 +212,8 @@ export const projectsData: Project[] = [
     carbonSequesteredTons: 0,
     satelliteReport: null,
     soilReport: null,
+    budgetReport: null,
+    fieldExecutionReport: null,
   },
   {
     id: 'DROS-02',
@@ -348,6 +354,8 @@ export const projectsData: Project[] = [
     carbonSequesteredTons: 0,
     satelliteReport: null,
     soilReport: null,
+    budgetReport: null,
+    fieldExecutionReport: null,
   },
   {
     id: 'DROS-03',
@@ -485,6 +493,8 @@ export const projectsData: Project[] = [
     carbonSequesteredTons: 4820,
     satelliteReport: null,
     soilReport: null,
+    budgetReport: null,
+    fieldExecutionReport: null,
   }
 ]
 

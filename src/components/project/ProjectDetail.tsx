@@ -10,6 +10,8 @@ import { ChemicalBiologicalModule } from "./modules/ChemicalBiologicalModule"
 import { RehabilitationReportModule } from "./modules/rehab-report/RehabilitationReportModule"
 import { FieldExecutionModule } from "./modules/FieldExecutionModule"
 import { MonitoringCarbonModule } from "./modules/MonitoringCarbonModule"
+import { BudgetReportModule } from "./modules/budget-report/BudgetReportModule"
+import { FieldExecutionReportModule } from "./modules/field-execution-report/FieldExecutionReportModule"
 import { useToast } from "@/context/ToastContext"
 
 interface ProjectDetailProps {
@@ -28,6 +30,8 @@ const MODULES: Record<number, React.ComponentType<ModuleProps>> = {
   4: RehabilitationReportModule,
   5: FieldExecutionModule,
   6: MonitoringCarbonModule,
+  7: BudgetReportModule,
+  8: FieldExecutionReportModule,
 }
 
 export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project }) => {

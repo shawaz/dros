@@ -108,6 +108,8 @@ export function buildNewProject(id: string, input: NewProjectInput): Project {
     rehabReport: null,
     satelliteReport: null,
     soilReport: null,
+    budgetReport: null,
+    fieldExecutionReport: null,
     kanban: [],
     resources: null,
     biomass: [],

@@ -14,6 +14,8 @@ import type { RehabilitationReport } from "@/data/rehabilitation-report"
 import type { LabReport } from "@/data/lab-report"
 import type { SatelliteAssessmentReport } from "@/data/satellite-report"
 import type { SoilBioReport } from "@/data/soil-bio-report"
+import type { BudgetReport } from "@/data/budget-report"
+import type { FieldExecutionReport } from "@/data/field-execution-report"
 
 export const projectsTable = sqliteTable("projects", {
   id: text("id").primaryKey(),
@@ -58,4 +60,6 @@ export const projectsTable = sqliteTable("projects", {
   carbonSequesteredTons: real("carbon_sequestered_tons").notNull(),
   satelliteReport: text("satellite_report", { mode: "json" }).$type<SatelliteAssessmentReport>(),
   soilReport: text("soil_report", { mode: "json" }).$type<SoilBioReport>(),
+  budgetReport: text("budget_report", { mode: "json" }).$type<BudgetReport>(),
+  fieldExecutionReport: text("field_execution_report", { mode: "json" }).$type<FieldExecutionReport>(),
 })

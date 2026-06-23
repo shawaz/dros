@@ -6,6 +6,8 @@ import type { RehabilitationReport } from "@/data/rehabilitation-report"
 import type { LabReport } from "@/data/lab-report"
 import type { SatelliteAssessmentReport } from "@/data/satellite-report"
 import type { SoilBioReport } from "@/data/soil-bio-report"
+import type { BudgetReport } from "@/data/budget-report"
+import type { FieldExecutionReport } from "@/data/field-execution-report"
 
 type ProjectRow = typeof projectsTable.$inferSelect
 
@@ -53,6 +55,8 @@ function rowToProject(row: ProjectRow): Project {
     carbonSequesteredTons: row.carbonSequesteredTons,
     satelliteReport: row.satelliteReport ?? null,
     soilReport: row.soilReport ?? null,
+    budgetReport: row.budgetReport ?? null,
+    fieldExecutionReport: row.fieldExecutionReport ?? null,
   }
 }
 
@@ -100,6 +104,8 @@ function projectToRow(project: Project) {
     carbonSequesteredTons: project.carbonSequesteredTons,
     satelliteReport: project.satelliteReport,
     soilReport: project.soilReport,
+    budgetReport: project.budgetReport,
+    fieldExecutionReport: project.fieldExecutionReport,
   }
 }
 
@@ -149,6 +155,16 @@ export async function updateProjectSatelliteReport(id: string, report: Satellite
 
 export async function updateProjectSoilReport(id: string, report: SoilBioReport): Promise<Project | null> {
   await db.update(projectsTable).set({ soilReport: report }).where(eq(projectsTable.id, id))
+  return getProject(id)
+}
+
+export async function updateProjectBudgetReport(id: string, report: BudgetReport): Promise<Project | null> {
+  await db.update(projectsTable).set({ budgetReport: report }).where(eq(projectsTable.id, id))
+  return getProject(id)
+}
+
+export async function updateProjectFieldExecutionReport(id: string, report: FieldExecutionReport): Promise<Project | null> {
+  await db.update(projectsTable).set({ fieldExecutionReport: report }).where(eq(projectsTable.id, id))
   return getProject(id)
 }
 

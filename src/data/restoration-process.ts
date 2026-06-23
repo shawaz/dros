@@ -1,4 +1,4 @@
-import { Satellite, Drone, FlaskConical, BrainCircuit, Shovel, BadgeCheck, LucideIcon } from "lucide-react"
+import { Satellite, Drone, FlaskConical, BrainCircuit, Shovel, BadgeCheck, Receipt, ClipboardList, LucideIcon } from "lucide-react"
 
 export interface RestorationStep {
   step: number
@@ -43,5 +43,17 @@ export const restorationProcessSteps: RestorationStep[] = [
     title: "Monitoring & Carbon Verification",
     icon: BadgeCheck,
     description: "Recurring NDVI and soil surveys verify survival rates and quantify carbon sequestration over time.",
+  },
+  {
+    step: 7,
+    title: "Budget Estimation",
+    icon: Receipt,
+    description: "AI-generated cost model with phase breakdown, cash flow, carbon ROI, and sensitivity analysis.",
+  },
+  {
+    step: 8,
+    title: "Field Execution Plan",
+    icon: ClipboardList,
+    description: "Pre-filled operational template for field crews — checklists, logs, amendment records, and QA gates.",
   },
 ]
