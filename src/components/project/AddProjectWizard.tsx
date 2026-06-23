@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import { SiteSelectionMap, type SelectedSite } from "./SiteSelectionMap"
 import { SiteAssessmentSummary } from "./SiteAssessmentSummary"
 import { SpeciesRecommendationStep } from "./SpeciesRecommendationStep"
@@ -36,6 +36,9 @@ export const AddProjectWizard: React.FC = () => {
 
   const handleSiteSelected = async (selected: SelectedSite) => {
     setSite(selected)
+    // Move to the species step immediately and show a loading panel while the
+    // site assessment is fetched, rather than holding on a blank map screen.
+    setStep("species")
     setFetching(true)
     try {
       const res = await fetch(
@@ -58,7 +61,6 @@ export const AddProjectWizard: React.FC = () => {
       setPreview({ rainfall: 80, aridity: 0.85 })
     } finally {
       setFetching(false)
-      setStep("species")
     }
   }
 
@@ -108,6 +110,17 @@ export const AddProjectWizard: React.FC = () => {
 
       {step === "map" && (
         <SiteSelectionMap onContinue={handleSiteSelected} />
+      )}
+
+      {step === "species" && fetching && (
+        <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-green-custom" />
+          <h3 className="font-sans text-sm font-semibold text-ink">Assessing Site Conditions</h3>
+          <p className="text-xs text-muted-custom max-w-sm">
+            Pulling rainfall, aridity, NDVI, and soil estimates for the selected area to build
+            an AI-driven species plan. This usually takes a few seconds.
+          </p>
+        </div>
       )}
 
       {step === "species" && site && preview && !fetching && (
