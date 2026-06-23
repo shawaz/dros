@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useMemo } from "react"
-import { Leaf, Droplets, Wind, ArrowRight, CheckCircle2, AlertTriangle, TreePine, Shrub, Wheat, Apple } from "lucide-react"
+import React, { useMemo, useState, useEffect } from "react"
+import { Leaf, Droplets, Wind, ArrowRight, CheckCircle2, AlertTriangle, TreePine, Shrub, Wheat, Apple, Sparkles, Loader2, ShieldCheck } from "lucide-react"
 import { recommendSpecies, recommendStrategy } from "@/lib/predict/species-recommender"
 import type { SelectedSite } from "./SiteSelectionMap"
 
@@ -20,6 +20,19 @@ interface SpeciesRecommendationStepProps {
   onContinue: () => void
 }
 
+interface AiValidationItem {
+  id: string
+  aiRank: number
+  confidence: "high" | "medium" | "low"
+  note: string
+}
+
+interface AiValidation {
+  byId: Record<string, AiValidationItem>
+  siteSummary: string | null
+  topWarning: string | null
+}
+
 const TYPE_ICON: Record<string, React.ReactNode> = {
   tree:     <TreePine className="w-3 h-3" />,
   shrub:    <Shrub className="w-3 h-3" />,
@@ -36,6 +49,12 @@ const TYPE_COLOR: Record<string, string> = {
   crop:     "bg-orange-100 text-orange-700",
 }
 
+const CONFIDENCE_COLOR: Record<string, string> = {
+  high:   "text-green-700 bg-green-50 border-green-200",
+  medium: "text-amber-700 bg-amber-50 border-amber-200",
+  low:    "text-red-700 bg-red-50 border-red-200",
+}
+
 const SGI_PROGRAMME_COLOR: Record<string, string> = {
   "National Forests Programme":        "bg-green-100 text-green-700",
   "Coastal Ecosystem Programme":       "bg-teal-100 text-teal-700",
@@ -46,6 +65,10 @@ const SGI_PROGRAMME_COLOR: Record<string, string> = {
 export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps> = ({
   site, assessment, onBack, onContinue,
 }) => {
+  const [aiValidation, setAiValidation] = useState<AiValidation | null>(null)
+  const [aiLoading, setAiLoading]       = useState(true)
+  const [aiError, setAiError]           = useState(false)
+
   const strategy = useMemo(() => recommendStrategy({
     lat: site.lat, lng: site.lng,
     rainfall: assessment.rainfall,
@@ -63,6 +86,55 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
     ndvi: assessment.ndvi,
     health: assessment.health,
   }, 5), [site, assessment])
+
+  // Fire AI validation in background immediately on mount
+  useEffect(() => {
+    let cancelled = false
+    setAiLoading(true)
+    setAiError(false)
+    setAiValidation(null)
+
+    fetch("/api/species-recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lat:      site.lat,
+        lng:      site.lng,
+        rainfall: assessment.rainfall,
+        aridity:  assessment.aridity,
+        ph:       assessment.ph ?? null,
+        ndvi:     assessment.ndvi ?? null,
+        health:   assessment.health ?? null,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return
+        if (data.available) {
+          setAiValidation({ byId: data.byId, siteSummary: data.siteSummary, topWarning: data.topWarning })
+        } else {
+          setAiError(true)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAiError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setAiLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [site, assessment])
+
+  // If AI validation is available, sort recommendations by AI rank
+  const displayRecs = useMemo(() => {
+    if (!aiValidation) return recommendations
+    return [...recommendations].sort((a, b) => {
+      const aRank = aiValidation.byId[a.species.id]?.aiRank ?? 99
+      const bRank = aiValidation.byId[b.species.id]?.aiRank ?? 99
+      return aRank - bRank
+    })
+  }, [recommendations, aiValidation])
 
   return (
     <div className="space-y-4">
@@ -100,19 +172,66 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
 
       {/* Species recommendations */}
       <div className="bg-white border border-border rounded-xl p-5">
-        <h3 className="font-sans text-sm font-semibold text-ink mb-1">Recommended Native Species</h3>
+        {/* Header with AI status */}
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <h3 className="font-sans text-sm font-semibold text-ink">Recommended Species</h3>
+          <div className="shrink-0">
+            {aiLoading && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-muted-custom bg-gray-50 border border-border rounded-full px-2 py-0.5">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                AI validating…
+              </span>
+            )}
+            {!aiLoading && aiValidation && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-green-700 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+                <ShieldCheck className="w-3 h-3" />
+                AI Validated
+              </span>
+            )}
+            {!aiLoading && aiError && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-muted-custom bg-gray-50 border border-border rounded-full px-2 py-0.5">
+                Rule-based only
+              </span>
+            )}
+          </div>
+        </div>
         <p className="text-xs text-muted-custom mb-4">
-          Top 5 from 60+ species (trees, shrubs, grasses, crops, mangroves) ranked by suitability for {site.lat.toFixed(3)}°N, {site.lng.toFixed(3)}°E.
+          Top 5 from 60+ species ranked for {site.lat.toFixed(3)}°N, {site.lng.toFixed(3)}°E.
+          {aiValidation ? " Rankings and notes reviewed by AI ecologist." : ""}
         </p>
 
+        {/* AI site summary */}
+        {aiValidation?.siteSummary && (
+          <div className="mb-4 flex gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <Sparkles className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-blue-800 leading-relaxed">{aiValidation.siteSummary}</p>
+          </div>
+        )}
+
+        {/* AI top warning */}
+        {aiValidation?.topWarning && (
+          <div className="mb-4 flex gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-800 leading-relaxed">{aiValidation.topWarning}</p>
+          </div>
+        )}
+
         <div className="space-y-3">
-          {recommendations.map((rec, i) => {
-            const pct = Math.round(rec.suitabilityScore * 100)
+          {displayRecs.map((rec, i) => {
+            const pct     = Math.round(rec.suitabilityScore * 100)
             const survPct = Math.round(rec.survivalProbability * 100)
             const barColor = pct >= 70 ? "bg-green-500" : pct >= 45 ? "bg-amber-400" : "bg-red-400"
+            const aiItem  = aiValidation?.byId[rec.species.id]
 
             return (
-              <div key={rec.species.id} className="rounded-xl border border-border p-4 hover:border-green-custom/40 transition-colors">
+              <div
+                key={rec.species.id}
+                className={`rounded-xl border p-4 transition-colors ${
+                  aiItem?.confidence === "low"
+                    ? "border-red-200 bg-red-50/30"
+                    : "border-border hover:border-green-custom/40"
+                }`}
+              >
                 <div className="flex items-start gap-3">
                   {/* Rank */}
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5 ${
@@ -133,6 +252,11 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
                       {rec.species.sgiCompliant && (
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
                           SGI ✓
+                        </span>
+                      )}
+                      {aiItem && (
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border ${CONFIDENCE_COLOR[aiItem.confidence]}`}>
+                          AI: {aiItem.confidence}
                         </span>
                       )}
                     </div>
@@ -156,32 +280,40 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
                       )}
                     </div>
 
-                    {/* Match reasons */}
-                    {rec.matchReasons.length > 0 && (
-                      <div className="flex flex-col gap-1 mb-2">
-                        {rec.matchReasons.map((r) => (
-                          <div key={r} className="flex items-start gap-1.5">
-                            <CheckCircle2 className="w-3 h-3 text-green-500 mt-px shrink-0" />
-                            <span className="text-[11px] text-muted-custom">{r}</span>
-                          </div>
-                        ))}
+                    {/* AI expert note — shown when available, replaces static note */}
+                    {aiItem ? (
+                      <div className="flex gap-1.5 mb-2">
+                        <Sparkles className="w-3 h-3 text-blue-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-blue-800 leading-snug">{aiItem.note}</p>
                       </div>
-                    )}
-                    {rec.warnings.length > 0 && (
-                      <div className="flex flex-col gap-1">
-                        {rec.warnings.map((w) => (
-                          <div key={w} className="flex items-start gap-1.5">
-                            <AlertTriangle className="w-3 h-3 text-amber-500 mt-px shrink-0" />
-                            <span className="text-[11px] text-amber-700">{w}</span>
+                    ) : (
+                      <>
+                        {/* Rule-based match reasons */}
+                        {rec.matchReasons.length > 0 && (
+                          <div className="flex flex-col gap-1 mb-2">
+                            {rec.matchReasons.map((r) => (
+                              <div key={r} className="flex items-start gap-1.5">
+                                <CheckCircle2 className="w-3 h-3 text-green-500 mt-px shrink-0" />
+                                <span className="text-[11px] text-muted-custom">{r}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        )}
+                        {rec.warnings.length > 0 && (
+                          <div className="flex flex-col gap-1 mb-2">
+                            {rec.warnings.map((w) => (
+                              <div key={w} className="flex items-start gap-1.5">
+                                <AlertTriangle className="w-3 h-3 text-amber-500 mt-px shrink-0" />
+                                <span className="text-[11px] text-amber-700">{w}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-[11px] text-muted-custom mt-2 leading-snug border-t border-border pt-2">
+                          {rec.species.suitabilityNote}
+                        </p>
+                      </>
                     )}
-
-                    {/* Note */}
-                    <p className="text-[11px] text-muted-custom mt-2 leading-snug border-t border-border pt-2">
-                      {rec.species.suitabilityNote}
-                    </p>
                   </div>
                 </div>
               </div>
