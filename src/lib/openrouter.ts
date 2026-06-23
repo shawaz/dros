@@ -21,7 +21,10 @@ const NATIVE_SPECIES_REFERENCE = [
 ].join(", ")
 
 export function isOpenRouterConfigured(): boolean {
-  return Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_MODEL)
+  return Boolean(
+    (process.env.OPENROUTER_API_KEY ?? "").trim() &&
+    (process.env.OPENROUTER_MODEL ?? "").trim()
+  )
 }
 
 function str(description?: string) {
@@ -240,7 +243,7 @@ export async function generateRehabilitationReport(project: Project): Promise<Re
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${(process.env.OPENROUTER_API_KEY ?? "").trim()}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
