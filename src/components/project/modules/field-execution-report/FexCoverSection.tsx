@@ -1,30 +1,32 @@
 import React from "react"
+import type { Project } from "@/data/projects"
 import type { FieldExecutionReport } from "@/data/field-execution-report"
 
-export const FexCoverSection: React.FC<{ report: FieldExecutionReport }> = ({ report }) => {
-  const date = new Date(report.generatedAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-  return (
-    <div className="rx-cover">
-      <div className="rx-badge">DROS FIELD OPERATIONS</div>
-      <h1 className="rx-title">{report.projectName}</h1>
-      <p className="rx-subtitle">Field Execution Plan</p>
-      <table className="rx-meta-table">
-        <tbody>
-          <tr><td>Document ID</td><td>{report.docId}</td></tr>
-          <tr><td>Parcel / Zone</td><td>{report.parcel}</td></tr>
-          <tr><td>Area</td><td>{report.areaHa} ha</td></tr>
-          <tr><td>Linked Plan</td><td>{report.linkedPlan}</td></tr>
-          <tr><td>Field Lead</td><td>{report.fieldLead}</td></tr>
-          <tr><td>Team Size</td><td>{report.teamSize} personnel</td></tr>
-          <tr><td>Start Date</td><td>{report.startDate}</td></tr>
-          <tr><td>Current Phase</td><td>{report.currentPhase}</td></tr>
-          <tr><td>Generated</td><td>{date}</td></tr>
-        </tbody>
-      </table>
+export const FexCoverSection: React.FC<{ project: Project; report: FieldExecutionReport }> = ({
+  project,
+  report,
+}) => (
+  <div className="rx-cover">
+    <div className="rx-cover-kicker">{report.docId} · Field Execution Template</div>
+    <h1 className="rx-cover-title">Field Execution Template</h1>
+    <p className="rx-cover-sub">{report.subtitle}</p>
+    <p className="rx-cover-sub" style={{ marginBottom: 4 }}>
+      Prepared for <strong>{project.name}</strong> · {project.region}
+    </p>
+
+    <div className="fx-cover-meta">
+      <div className="fx-cm-col">
+        <div className="fx-cm-row"><div className="fx-cm-key">Document ID</div><div className="fx-cm-val fx-mono">{report.docId}</div></div>
+        <div className="fx-cm-row"><div className="fx-cm-key">Linked plan</div><div className="fx-cm-val fx-mono">{report.linkedPlan}</div></div>
+        <div className="fx-cm-row"><div className="fx-cm-key">Parcel</div><div className="fx-cm-val">{report.parcel}</div></div>
+        <div className="fx-cm-row"><div className="fx-cm-key">Area</div><div className="fx-cm-val">{report.areaHa} hectares</div></div>
+      </div>
+      <div className="fx-cm-col">
+        <div className="fx-cm-row"><div className="fx-cm-key">Field lead</div><div className="fx-cm-val">{report.fieldLead}</div></div>
+        <div className="fx-cm-row"><div className="fx-cm-key">Team size</div><div className="fx-cm-val">{report.teamSize}</div></div>
+        <div className="fx-cm-row"><div className="fx-cm-key">Start date</div><div className="fx-cm-val">{report.startDate}</div></div>
+        <div className="fx-cm-row"><div className="fx-cm-key">Current phase</div><div className="fx-cm-val">{report.currentPhase}</div></div>
+      </div>
     </div>
-  )
-}
+  </div>
+)

@@ -1,47 +1,68 @@
-import React from "react"
-import type { FieldExecutionReport, FexPriority } from "@/data/field-execution-report"
+"use client"
 
-const PRIORITY_STYLE: Record<FexPriority, string> = {
-  critical: "bg-red-100 text-red-700 border-red-200",
-  required: "bg-amber-100 text-amber-700 border-amber-200",
-  confirm: "bg-blue-100 text-blue-700 border-blue-200",
-}
+import React, { useState } from "react"
+import type { FieldExecutionReport } from "@/data/field-execution-report"
+import { FexSectionBar } from "./FexSectionBar"
+import { fxColor } from "./helpers"
 
-export const FexPreMobSection: React.FC<{ report: FieldExecutionReport }> = ({ report }) => (
-  <div>
-    <h2 className="rx-section-title">Pre-Mobilisation Checklist</h2>
-    <div className="space-y-6">
-      {report.preMobGroups.map((group) => (
-        <div key={group.title} className="border border-border rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-border">
-            <h3 className="text-sm font-semibold text-ink">{group.title}</h3>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${PRIORITY_STYLE[group.items[0]?.priority ?? "confirm"]}`}>
-              {group.badge}
-            </span>
+const CheckIcon = () => (
+  <svg viewBox="0 0 12 12" fill="none">
+    <path d="M2.5 6l3 3 4.5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+export const FexPreMobSection: React.FC<{ report: FieldExecutionReport }> = ({ report }) => {
+  const [done, setDone] = useState<Set<string>>(new Set())
+  const toggle = (key: string) =>
+    setDone((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+
+  const total = report.preMobTotal
+  const count = done.size
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0
+
+  return (
+    <div>
+      <FexSectionBar icon="✅" num="Section 01" title="Pre-Mobilization Checklist" color="warn" />
+      <p className="rx-section-intro">
+        Complete all items before field crew deploys to site. Items marked CRITICAL must be verified
+        by the Field Lead with a signature. Do not mobilize with any critical item incomplete.
+      </p>
+
+      {report.preMobGroups.map((group, gi) => (
+        <div key={group.title} className="fx-form-block">
+          <div className="fx-form-header">
+            <span className="fx-form-title">{group.title}</span>
+            <span className={`fx-st ${fxColor(group.badgeStatus)}`}>{group.badge}</span>
           </div>
-          <div className="divide-y divide-border">
-            {group.items.map((item) => (
-              <div key={item.id} className="flex items-start gap-3 px-4 py-3">
-                <div className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded border-2 ${
-                  item.priority === "critical" ? "border-red-400" :
-                  item.priority === "required" ? "border-amber-400" : "border-blue-400"
-                }`} />
-                <div className="flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium text-ink">{item.title}</p>
-                    <span className={`flex-shrink-0 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border ${PRIORITY_STYLE[item.priority]}`}>
-                      {item.priority}
-                    </span>
+          <div className="fx-form-body">
+            {group.items.map((item, ii) => {
+              const key = `${gi}-${ii}`
+              return (
+                <div key={key} className="fx-check-item" onClick={() => toggle(key)}>
+                  <div className={`fx-check-box${done.has(key) ? " fx-done" : ""}`}>
+                    <CheckIcon />
                   </div>
-                  {item.detail && (
-                    <p className="text-xs text-muted-custom mt-0.5">{item.detail}</p>
-                  )}
+                  <div>
+                    <div className="fx-check-title">{item.title}</div>
+                    {item.detail && <div className="fx-check-detail">{item.detail}</div>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       ))}
+
+      <div className="fx-progress">
+        <span className="fx-progress-count">{count} / {total}</span>
+        <span className="fx-progress-label">items completed</span>
+        <div className="fx-progress-bar"><div className="fx-progress-fill" style={{ width: `${pct}%` }} /></div>
+      </div>
     </div>
-  </div>
-)
+  )
+}

@@ -1,0 +1,95 @@
+/*
+ * Field Execution Template — template-specific styling mirroring
+ * ~/Downloads/DROS Field Execution Template.html. Scoped under .rx-report so it
+ * inherits the shared paper/serif/mono tokens.
+ */
+
+.rx-report { --fx-teal: #1A7A6E; --fx-teal-lt: #E4F5F2; }
+
+.rx-report .fx-c-crit { --fx-c: var(--rx-red); --fx-c-lt: var(--rx-red-lt); }
+.rx-report .fx-c-warn { --fx-c: var(--rx-amber); --fx-c-lt: var(--rx-amber-lt); }
+.rx-report .fx-c-info { --fx-c: var(--rx-blue); --fx-c-lt: var(--rx-blue-lt); }
+.rx-report .fx-c-ok { --fx-c: var(--rx-green); --fx-c-lt: var(--rx-green-lt); }
+.rx-report .fx-c-teal { --fx-c: var(--fx-teal); --fx-c-lt: var(--fx-teal-lt); }
+.rx-report .fx-c-purple { --fx-c: var(--rx-purple); --fx-c-lt: var(--rx-purple-lt); }
+
+/* ---------- Cover meta (2-col) ---------- */
+.rx-report .fx-cover-meta { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rx-border); border-radius: 10px; overflow: hidden; background: #fff; }
+.rx-report .fx-cm-col:first-child { border-right: 1px solid var(--rx-border); }
+.rx-report .fx-cm-row { display: flex; align-items: center; border-bottom: 1px solid var(--rx-border); font-size: 13px; }
+.rx-report .fx-cm-col .fx-cm-row:last-child { border-bottom: none; }
+.rx-report .fx-cm-key { font-family: var(--rx-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--rx-muted); padding: 11px 16px; width: 132px; flex-shrink: 0; }
+.rx-report .fx-cm-val { padding: 11px 16px; color: var(--rx-ink); font-weight: 500; flex: 1; }
+.rx-report .fx-cm-val.fx-mono { font-family: var(--rx-mono); font-size: 12px; }
+
+/* ---------- Section header bar ---------- */
+.rx-report .fx-section-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--rx-border); }
+.rx-report .fx-section-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--fx-c-lt); color: var(--fx-c); }
+.rx-report .fx-section-num { font-family: var(--rx-mono); font-size: 10px; color: var(--rx-dim); letter-spacing: .08em; }
+.rx-report .fx-section-title { font-family: var(--rx-serif); font-size: 20px; font-weight: 700; color: var(--rx-ink); line-height: 1.2; margin: 2px 0 0; }
+
+/* ---------- Status pill ---------- */
+.rx-report .fx-st { font-family: var(--rx-mono); font-size: 8.5px; font-weight: 600; letter-spacing: .04em; padding: 3px 10px; border-radius: 4px; display: inline-block; background: var(--fx-c-lt); color: var(--fx-c); }
+
+/* ---------- Form block ---------- */
+.rx-report .fx-form-block { background: #fff; border: 1px solid var(--rx-border); border-radius: 10px; overflow: hidden; margin-bottom: 18px; }
+.rx-report .fx-form-header { padding: 14px 20px; border-bottom: 1px solid var(--rx-border); display: flex; align-items: center; justify-content: space-between; background: #F4F3EF; }
+.rx-report .fx-form-title { font-family: var(--rx-serif); font-size: 14px; font-weight: 600; color: var(--rx-ink); }
+.rx-report .fx-form-body { padding: 20px; }
+
+/* ---------- Checklist ---------- */
+.rx-report .fx-check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rx-border); cursor: pointer; }
+.rx-report .fx-check-item:last-child { border-bottom: none; }
+.rx-report .fx-check-box { width: 20px; height: 20px; border: 2px solid var(--rx-border2); border-radius: 5px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.rx-report .fx-check-box.fx-done { background: var(--rx-green); border-color: var(--rx-green); }
+.rx-report .fx-check-box svg { width: 12px; height: 12px; display: none; }
+.rx-report .fx-check-box.fx-done svg { display: block; }
+.rx-report .fx-check-title { font-size: 13px; font-weight: 500; color: var(--rx-ink); }
+.rx-report .fx-check-detail { font-size: 11.5px; color: var(--rx-muted); margin-top: 2px; line-height: 1.5; }
+
+/* ---------- Form fields ---------- */
+.rx-report .fx-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.rx-report .fx-field-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.rx-report .fx-field:last-child { margin-bottom: 0; }
+.rx-report .fx-field-label { font-family: var(--rx-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--rx-muted); margin-bottom: 5px; display: block; }
+.rx-report .fx-field-input { width: 100%; padding: 9px 12px; border: 1px solid var(--rx-border); border-radius: 6px; font-size: 13px; color: var(--rx-ink); font-family: var(--rx-sans); background: var(--rx-paper); }
+.rx-report .fx-field-input:focus { outline: none; border-color: var(--rx-green); background: #fff; }
+.rx-report textarea.fx-field-input { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+/* ---------- Log table ---------- */
+.rx-report .fx-log-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.rx-report .fx-log-table thead th { font-family: var(--rx-mono); font-size: 8px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--rx-muted); text-align: left; padding: 10px 12px; background: #F4F3EF; border-bottom: 1px solid var(--rx-border); }
+.rx-report .fx-log-table tbody td { padding: 10px 12px; border-bottom: 1px solid var(--rx-border); vertical-align: top; color: var(--rx-ink2); }
+.rx-report .fx-log-table tbody tr:last-child td { border-bottom: none; }
+.rx-report .fx-log-table .fx-row-num { font-family: var(--rx-mono); font-size: 10px; color: var(--rx-dim); width: 30px; }
+.rx-report .fx-cell-input { width: 100%; border: none; border-bottom: 1px solid var(--rx-border2); padding: 4px 0; font-size: 12px; color: var(--rx-ink); background: transparent; font-family: var(--rx-mono); }
+.rx-report .fx-cell-input:focus { outline: none; border-bottom-color: var(--rx-green); }
+
+/* ---------- Gate callout ---------- */
+.rx-report .fx-gate { display: flex; gap: 14px; padding: 16px 20px; background: var(--fx-c-lt); border: 1px solid color-mix(in srgb, var(--fx-c) 30%, transparent); border-left: 4px solid var(--fx-c); border-radius: 0 8px 8px 0; margin-bottom: 16px; align-items: flex-start; }
+.rx-report .fx-gate-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--fx-c); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; font-size: 13px; font-weight: 700; font-family: var(--rx-mono); }
+.rx-report .fx-gate-body { flex: 1; font-size: 13px; color: var(--rx-ink2); line-height: 1.65; }
+.rx-report .fx-gate-body strong { color: var(--fx-c); }
+
+/* ---------- Progress strip ---------- */
+.rx-report .fx-progress { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--rx-green-lt); border-radius: 8px; margin-bottom: 20px; }
+.rx-report .fx-progress-count { font-family: var(--rx-mono); font-size: 14px; font-weight: 600; color: var(--rx-green); }
+.rx-report .fx-progress-label { font-size: 12px; color: var(--rx-ink2); }
+.rx-report .fx-progress-bar { flex: 1; height: 6px; background: rgba(0,0,0,.08); border-radius: 3px; overflow: hidden; max-width: 220px; }
+.rx-report .fx-progress-fill { height: 100%; border-radius: 3px; background: var(--rx-green); transition: width .3s; }
+
+/* ---------- Signature ---------- */
+.rx-report .fx-sig-block { border: 1px solid var(--rx-border); border-radius: 10px; overflow: hidden; background: #fff; margin-bottom: 18px; }
+.rx-report .fx-sig-row { display: grid; grid-template-columns: 150px 1fr 1fr 100px; gap: 0; border-bottom: 1px solid var(--rx-border); padding: 16px 20px; align-items: end; }
+.rx-report .fx-sig-block .fx-sig-row:last-child { border-bottom: none; }
+.rx-report .fx-sig-label { font-size: 13px; font-weight: 500; color: var(--rx-ink); }
+.rx-report .fx-sig-line { border-bottom: 1px solid var(--rx-border2); min-height: 24px; margin: 0 8px; }
+.rx-report .fx-sig-date { font-family: var(--rx-mono); font-size: 11px; color: var(--rx-dim); }
+
+.rx-report .fx-note { font-size: 12px; color: var(--rx-muted); margin-top: 8px; line-height: 1.6; }
+
+@media (max-width: 760px) {
+  .rx-report .fx-cover-meta { grid-template-columns: 1fr; }
+  .rx-report .fx-field-row, .rx-report .fx-field-row-4 { grid-template-columns: 1fr; }
+  .rx-report .fx-sig-row { grid-template-columns: 1fr; gap: 8px; }
+}

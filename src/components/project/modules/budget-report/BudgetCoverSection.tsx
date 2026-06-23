@@ -1,35 +1,33 @@
 import React from "react"
 import type { Project } from "@/data/projects"
 import type { BudgetReport } from "@/data/budget-report"
+import { fmt } from "./helpers"
 
-interface Props {
-  project: Project
-  report: BudgetReport
-}
-
-export const BudgetCoverSection: React.FC<Props> = ({ project, report }) => {
-  const date = new Date(report.generatedAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-  return (
+export const BudgetCoverSection: React.FC<{ project: Project; report: BudgetReport }> = ({
+  project,
+  report,
+}) => (
     <div className="rx-cover">
-      <div className="rx-badge">DROS FINANCIAL MODEL</div>
-      <h1 className="rx-title">{project.name}</h1>
-      <p className="rx-subtitle">Budget &amp; Cost Estimation Report</p>
-      <table className="rx-meta-table">
-        <tbody>
-          <tr><td>Document ID</td><td>{report.docId}</td></tr>
-          <tr><td>Region</td><td>{project.region}, Saudi Arabia</td></tr>
-          <tr><td>Project ID</td><td>{project.id}</td></tr>
-          <tr><td>Total Budget</td><td>{report.totalSar.toLocaleString()} SAR</td></tr>
-          <tr><td>Cost per Hectare</td><td>{report.costPerHa.toLocaleString()} SAR/ha</td></tr>
-          <tr><td>Carbon ROI</td><td>{report.carbonRoiX}× by Year 10</td></tr>
-          <tr><td>Breakeven Year</td><td>Year {report.breakevenYear} (carbon offset)</td></tr>
-          <tr><td>Report Date</td><td>{date}</td></tr>
-        </tbody>
-      </table>
+      <div className="rx-cover-kicker">{report.docId} · Budget &amp; Estimation</div>
+      <h1 className="rx-cover-title">Budget &amp; Cost Estimation Report</h1>
+      <p className="rx-cover-sub">{report.subtitle}</p>
+      <p className="rx-cover-sub" style={{ marginBottom: 4 }}>
+        Prepared for <strong>{project.name}</strong> · {project.region}
+      </p>
+
+      <div className="bx-cover-meta">
+        <div className="bx-cm-col">
+          <div className="bx-cm-row"><div className="bx-cm-key">Budget ID</div><div className="bx-cm-val bx-mono">{report.docId}</div></div>
+          <div className="bx-cm-row"><div className="bx-cm-key">Linked plan</div><div className="bx-cm-val bx-mono">{report.linkedPlan}</div></div>
+          <div className="bx-cm-row"><div className="bx-cm-key">Area</div><div className="bx-cm-val">{report.areaHa} hectares</div></div>
+          <div className="bx-cm-row"><div className="bx-cm-key">Duration</div><div className="bx-cm-val">{report.durationLabel}</div></div>
+        </div>
+        <div className="bx-cm-col">
+          <div className="bx-cm-row"><div className="bx-cm-key">Total budget</div><div className="bx-cm-val bx-mono" style={{ color: "var(--rx-amber)", fontWeight: 600 }}>SAR {fmt(report.totalSar)}</div></div>
+          <div className="bx-cm-row"><div className="bx-cm-key">Cost per ha</div><div className="bx-cm-val bx-mono">SAR {fmt(report.costPerHaSar)}</div></div>
+          <div className="bx-cm-row"><div className="bx-cm-key">Currency</div><div className="bx-cm-val">{report.currencyNote}</div></div>
+          <div className="bx-cm-row"><div className="bx-cm-key">Prepared</div><div className="bx-cm-val">{report.preparedLabel}</div></div>
+        </div>
+      </div>
     </div>
-  )
-}
+)

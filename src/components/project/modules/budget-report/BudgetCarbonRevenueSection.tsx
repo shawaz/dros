@@ -1,33 +1,51 @@
 import React from "react"
 import type { BudgetReport } from "@/data/budget-report"
+import { BudgetSectionBar } from "./BudgetSectionBar"
+import { rowClass, colorClass } from "./helpers"
 
 export const BudgetCarbonRevenueSection: React.FC<{ report: BudgetReport }> = ({ report }) => (
   <div>
-    <h2 className="rx-section-title">Carbon Revenue Projection</h2>
-    <p className="text-xs text-muted-custom mb-4">
-      Carbon sequestration projected over a 10-year crediting period. Revenue modelled at USD 15 (low) and USD 30 (high) per tCO₂e.
-    </p>
-    <table className="rx-table">
+    <BudgetSectionBar icon="🌿" num="Section 09" title="Carbon Credit Revenue Projection" color="green" />
+
+    <div className="bx-cmp-grid">
+      {report.carbonCards.map((c) => (
+        <div key={c.title} className={`bx-cmp-card ${colorClass(c.bigColor)}`}>
+          <div className="bx-cmp-title">{c.title}</div>
+          <div className="bx-cmp-big">{c.big}</div>
+          <div className="bx-cmp-sub">{c.sub}</div>
+        </div>
+      ))}
+    </div>
+
+    <table className="bx-btable">
       <thead>
         <tr>
-          <th>Period</th>
-          <th className="text-right">Seq. (tCO₂e)</th>
-          <th className="text-right">Cumulative (tCO₂e)</th>
-          <th className="text-right">Rev. Low (USD)</th>
-          <th className="text-right">Rev. High (USD)</th>
+          <th>Year</th>
+          <th>Sequestration (tCO₂e)</th>
+          <th>Cumulative</th>
+          <th>Revenue @ $15/t</th>
+          <th className="bx-right">Revenue @ $30/t</th>
         </tr>
       </thead>
       <tbody>
-        {report.carbonRevenue.map((row) => (
-          <tr key={row.period}>
-            <td className="font-mono text-xs">{row.period}</td>
-            <td className="text-right font-mono">{row.seqTco2e}</td>
-            <td className="text-right font-mono">{row.cumulative}</td>
-            <td className="text-right font-mono text-amber-700">{row.revLowUsd}</td>
-            <td className="text-right font-mono text-green-custom">{row.revHighUsd}</td>
+        {report.carbonRevenue.map((r) => (
+          <tr key={r.year} className={rowClass(r.status)}>
+            <td className="bx-item">{r.year}</td>
+            <td className="bx-mono">{r.sequestration}</td>
+            <td className="bx-mono">{r.cumulative}</td>
+            <td className="bx-cost" style={{ textAlign: "left" }}>{r.revLow}</td>
+            <td className={`bx-cost${r.revHighGreen ? " bx-c-green" : ""}`}>{r.revHigh}</td>
           </tr>
         ))}
+        <tr className="bx-grand">
+          <td colSpan={2} style={{ paddingLeft: 16 }}>30-year total</td>
+          <td className="bx-cost" style={{ color: "rgba(255,255,255,.5)" }}>{report.carbonTotal.seq}</td>
+          <td className="bx-cost" style={{ color: "rgba(255,255,255,.5)" }}>{report.carbonTotal.low}</td>
+          <td className="bx-cost">{report.carbonTotal.high}</td>
+        </tr>
       </tbody>
     </table>
+
+    <div className="bx-note">{report.carbonNote}</div>
   </div>
 )

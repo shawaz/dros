@@ -1,74 +1,41 @@
 import type { Project } from "@/data/projects"
 import type { FieldExecutionReport } from "@/data/field-execution-report"
 import { isOpenRouterConfigured } from "@/lib/openrouter"
+import { DEMO_FIELD_EXECUTION_REPORT } from "@/data/field-execution-report-demo"
 
-const SYSTEM_PROMPT = `You are a senior field operations manager for desert land rehabilitation projects in Saudi Arabia, working within the DROS platform.
+// The Field Execution Template is a fixed DROS field-protocol document. The
+// figures/checklists are canonical; only the cover meta is project-specific.
+// The LLM optionally fills plausible cover values (field lead, team size, start
+// date, parcel); on any failure the deterministic project overlay is used.
 
-CRITICAL: You must output a single JSON object with EXACTLY these top-level keys — no more, no less:
-generatedAt, docId, projectName, parcel, areaHa, linkedPlan, fieldLead, teamSize, startDate, currentPhase, preMobGroups, materialsManifest, amendmentLog, plantingLog, qaGates, hseProtocol, weeklyKpis, coldChainNote, heatStressNote, assumptions
-
-Schema:
-- generatedAt: ISO 8601 timestamp string
-- docId: string like "DROS-FEX-{year}-{id}"
-- projectName: string
-- parcel: string (e.g. "Block A — Northern Sector")
-- areaHa: number
-- linkedPlan: string (e.g. "DROS-RX-2026-001")
-- fieldLead: string (plausible Arabic name + title)
-- teamSize: number (6–20 depending on area)
-- startDate: ISO date string (plausible future date)
-- currentPhase: string (e.g. "Phase 1 — Soil Preparation & Amendment")
-- preMobGroups: array of {title:string, badge:string, items:[{id:string, title:string, detail?:string, priority:"critical"|"required"|"confirm"}]}
-  Must have exactly 3 groups: "Site Access & Safety", "Equipment & Materials", "Lab Coordination"
-- materialsManifest: array of {material:string, orderedQty:string, storage?:string}
-- amendmentLog: array of {amendment:string, rate:string, area:string, method:string, depthCm:string}
-- plantingLog: array of {species:string, count:number, spacing:string, areaHa:number}
-- qaGates: array of {gate:string, condition:string, target:string, rowColor:string} (rowColor: hex "#fff3cd" warn, "#d4edda" ok, "#f8d7da" critical, "#d1ecf1" info)
-- hseProtocol: array of strings (7–10 safety rules for KSA desert field operations)
-- weeklyKpis: array of {label:string, value:string} (5–7 progress KPIs)
-- coldChainNote: string (instructions for microbial inoculants and biochar cold chain)
-- heatStressNote: string (KSA summer heat protocol)
-- assumptions: array of strings (5–8 items)
-
-Rules:
-- Calibrate quantities to the project area.
-- Planting log must include only species from the project's species list.
-- Amendment log must reflect the rehabilitation prescription if present.
-- HSE rules must reference specific KSA/Arabian Peninsula conditions (heat, wildlife, dust storms).
-- Write in precise, operational, professional register. No marketing language.
-
-RETURN ONLY the raw JSON object. No markdown, no code fences, no explanation, no wrapper keys.`
-
-function buildPrompt(project: Project): string {
-  const areaHa = Math.round((Math.PI * (project.aoi.radiusM / 1000) ** 2) * 100) / 100
-  const lines = [
-    `Project: ${project.name} (${project.id})`,
-    `Region: ${project.region}, Saudi Arabia`,
-    `Estimated area: ${areaHa} ha (derived from AOI radius ${project.aoi.radiusM} m)`,
-    `Aridity index: ${project.aridity}, Rainfall: ${project.rainfall} mm/yr`,
-    `Species planned: ${project.species.join(", ")}`,
-    `Soil treatments: ${project.treatments.join(", ")}`,
-    `Phases: ${project.phases.map((p) => `${p.name} (${p.range})`).join("; ")}`,
-    `Current project step: ${project.currentStep}`,
-  ]
-  if (project.rehabReport) {
-    lines.push("", "Rehabilitation prescription (ground truth):")
-    lines.push(`- Timeline: ${project.rehabReport.timelineMonths} months`)
-    const sp = project.rehabReport.species.map((s) => `${s.name} (${s.latinName})`).join(", ")
-    lines.push(`- Recommended species: ${sp}`)
-    const tx = project.rehabReport.treatment.map((t) => t.title).join("; ")
-    lines.push(`- Treatment protocols: ${tx}`)
-  }
-  if (project.labReport?.chemical) {
-    lines.push(`- Soil pH: ${project.labReport.chemical.ph}, EC: ${project.labReport.chemical.ecDsM} dS/m`)
-  }
-  return lines.join("\n")
+function areaHa(project: Project): number {
+  return Math.round((Math.PI * (project.aoi.radiusM / 1000) ** 2) * 100) / 100
 }
 
-export async function generateFieldExecutionReport(project: Project): Promise<FieldExecutionReport> {
-  if (!isOpenRouterConfigured()) {
-    throw new Error("openrouter_not_configured")
+function projectOverlay(project: Project): Partial<FieldExecutionReport> {
+  return {
+    projectName: project.name,
+    parcel: `${project.region} — primary parcel`,
+    areaHa: areaHa(project),
   }
+}
+
+const SYSTEM_PROMPT = `You are a DROS field operations coordinator (Saudi Arabia). Given a restoration project, propose plausible cover-sheet values for its field execution template.
+Output ONLY a single JSON object: {"fieldLead": string, "teamSize": string, "startDate": string, "parcel": string, "currentPhase": string}.
+- fieldLead: a realistic Saudi field-lead name + title.
+- teamSize: e.g. "8 crew members".
+- startDate: a plausible date string.
+- parcel: a short parcel/zone name.
+- currentPhase: one of "Phase 1 — Site prep" … "Phase 6 — Carbon".
+No markdown, no extra keys.`
+
+async function tailorCover(project: Project): Promise<Partial<FieldExecutionReport>> {
+  const userPrompt = [
+    `Project: ${project.name} (${project.id})`,
+    `Region: ${project.region}`,
+    `Area: ~${areaHa(project)} ha · Status: ${project.status} · Step ${project.currentStep}`,
+    `Species: ${project.species.join(", ")}`,
+  ].join("\n")
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -80,25 +47,47 @@ export async function generateFieldExecutionReport(project: Project): Promise<Fi
       model: process.env.OPENROUTER_MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: buildPrompt(project) },
+        { role: "user", content: userPrompt },
       ],
     }),
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(45_000),
   })
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "")
-    throw new Error(`openrouter_request_failed: ${res.status} ${body.slice(0, 800)}`)
-  }
+  if (!res.ok) throw new Error(`openrouter_request_failed: ${res.status}`)
 
   const json = await res.json()
   const raw = json?.choices?.[0]?.message?.content
   if (typeof raw !== "string") throw new Error("openrouter_empty_response")
-
-  const content = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim()
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim()
+  let parsed: Record<string, unknown>
   try {
-    return JSON.parse(content) as FieldExecutionReport
+    parsed = JSON.parse(cleaned)
   } catch {
-    throw new Error(`openrouter_invalid_json: ${content.slice(0, 200)}`)
+    const s = cleaned.indexOf("{")
+    const e = cleaned.lastIndexOf("}")
+    if (s === -1 || e <= s) throw new Error("openrouter_invalid_json")
+    parsed = JSON.parse(cleaned.slice(s, e + 1))
+  }
+  const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined)
+  const out: Partial<FieldExecutionReport> = {}
+  if (str(parsed.fieldLead)) out.fieldLead = str(parsed.fieldLead)
+  if (str(parsed.teamSize)) out.teamSize = str(parsed.teamSize)
+  if (str(parsed.startDate)) out.startDate = str(parsed.startDate)
+  if (str(parsed.parcel)) out.parcel = str(parsed.parcel)
+  if (str(parsed.currentPhase)) out.currentPhase = str(parsed.currentPhase)
+  return out
+}
+
+export async function generateFieldExecutionReport(project: Project): Promise<FieldExecutionReport> {
+  const base: FieldExecutionReport = {
+    ...DEMO_FIELD_EXECUTION_REPORT,
+    ...projectOverlay(project),
+    generatedAt: new Date().toISOString(),
+  }
+  if (!isOpenRouterConfigured()) return base
+  try {
+    const tailored = await tailorCover(project)
+    return { ...base, ...tailored }
+  } catch {
+    return base
   }
 }

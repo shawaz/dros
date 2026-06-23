@@ -11,6 +11,32 @@ import type { FieldExecutionReport } from "@/data/field-execution-report"
 
 type ProjectRow = typeof projectsTable.$inferSelect
 
+// The Budget/Field-Execution report shapes changed (now mirror the HTML
+// templates). Reports persisted under the old shape would crash the new
+// renderers, so treat any stale-shaped JSON as "not generated" — the module
+// then offers a fresh regenerate under the current shape.
+function validBudgetReport(r: unknown): BudgetReport | null {
+  const a = r as { amendments?: { columns?: unknown }; kpis?: unknown } | null
+  if (a && a.amendments && Array.isArray(a.amendments.columns) && Array.isArray(a.kpis)) {
+    return r as BudgetReport
+  }
+  return null
+}
+function validFieldExecutionReport(r: unknown): FieldExecutionReport | null {
+  const a = r as { qaGates?: unknown[]; preMobGroups?: unknown[] } | null
+  if (
+    a &&
+    Array.isArray(a.qaGates) &&
+    a.qaGates[0] &&
+    typeof a.qaGates[0] === "object" &&
+    "targetColor" in (a.qaGates[0] as object) &&
+    Array.isArray(a.preMobGroups)
+  ) {
+    return r as FieldExecutionReport
+  }
+  return null
+}
+
 function rowToProject(row: ProjectRow): Project {
   return {
     id: row.id,
@@ -55,8 +81,8 @@ function rowToProject(row: ProjectRow): Project {
     carbonSequesteredTons: row.carbonSequesteredTons,
     satelliteReport: row.satelliteReport ?? null,
     soilReport: row.soilReport ?? null,
-    budgetReport: row.budgetReport ?? null,
-    fieldExecutionReport: row.fieldExecutionReport ?? null,
+    budgetReport: validBudgetReport(row.budgetReport),
+    fieldExecutionReport: validFieldExecutionReport(row.fieldExecutionReport),
   }
 }
 

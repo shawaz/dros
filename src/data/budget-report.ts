@@ -1,60 +1,103 @@
+// Budget & Cost Estimation report — mirrors DROS-BUD-2026-001
+// (~/Downloads/DROS Budget Estimation.html). Structure maps 1:1 to the
+// template's sections so the report renders pixel-faithful to the HTML.
+
+export type BudgetStatus = "ok" | "warn" | "crit" | "info"
+export type BudgetColor = "red" | "amber" | "green" | "blue" | "teal" | "purple" | "dim"
+
 export interface BudgetKpi {
   label: string
   value: string
   unit: string
-  color: string
+  color: BudgetColor // top-bar accent + value color
 }
 
 export interface BudgetCategoryBar {
   name: string
   sarAmount: number
   pct: number
-  color: string
+  color: BudgetColor
 }
 
-export interface BudgetPhase {
+export interface BudgetPhaseRow {
   phase: string
   period: string
   description: string
   cost: number
   pctOfTotal: string
+  status: BudgetStatus
+  costColor?: BudgetColor
 }
 
+export interface BudgetCell {
+  text: string
+  bold?: boolean
+  muted?: boolean // smaller, muted "detail" styling
+  mono?: boolean
+}
+
+// Costed line item. `cells` are every column except the final right-aligned
+// cost — column count/labels vary per table (amendments, infra, labor, …).
 export interface BudgetLineItem {
-  item: string
-  detail: string
-  qty: string
-  unitCost: string
+  cells: BudgetCell[]
+  cost: number
+  status: BudgetStatus
+  costColor?: BudgetColor
+}
+
+export interface BudgetTableBlock {
+  intro?: string
+  columns: string[] // header labels; last is the right-aligned cost column
+  rows: BudgetLineItem[]
+  subtotalLabel: string
   subtotal: number
-  rowColor?: string
 }
 
 export interface CashFlowBar {
-  label: string
-  amountK: number
-  type: "critical" | "warn" | "ok" | "info" | "carbon"
+  month: string
+  valueK: number
+  color: BudgetColor
 }
 
-export interface CashFlowTableRow {
+export interface CashFlowRow {
   period: string
   phase: string
   spend: number
   cumulative: number
   pctSpent: string
+  status: BudgetStatus
+  spendColor?: BudgetColor
+}
+
+export interface CmpCard {
+  title: string
+  big: string
+  bigColor: BudgetColor
+  sub: string
 }
 
 export interface CarbonRevenueRow {
-  period: string
-  seqTco2e: string
+  year: string
+  sequestration: string
   cumulative: string
-  revLowUsd: string
-  revHighUsd: string
+  revLow: string
+  revHigh: string
+  status: BudgetStatus
+  revHighGreen?: boolean
 }
 
-export interface RoiScenario {
-  pricePerT: number
-  roiX: number
-  breakevenYear: number
+export interface BreakevenBar {
+  label: string
+  pct: number
+  color: BudgetColor
+  value: string
+  tag: string
+}
+
+export interface SimpleRow3 {
+  metric: string
+  value: string
+  impact: string
 }
 
 export interface SensitivityRow {
@@ -63,29 +106,67 @@ export interface SensitivityRow {
   downside: string
   upside: string
   impact: string
+  status: BudgetStatus
 }
 
 export interface BudgetReport {
   generatedAt: string
   docId: string
+
+  // Cover
+  subtitle: string
+  linkedPlan: string
+  areaHa: number
+  durationLabel: string
   totalSar: number
-  costPerHa: number
-  carbonRoiX: number
-  breakevenYear: number
+  costPerHaSar: number
+  totalUsd: string
+  currencyNote: string
+  preparedLabel: string
+
+  // KPIs
   kpis: BudgetKpi[]
+
+  // 01 Executive summary
+  summaryIntro: string
   categoryBars: BudgetCategoryBar[]
-  phases: BudgetPhase[]
-  amendments: BudgetLineItem[]
-  infrastructure: BudgetLineItem[]
-  labor: BudgetLineItem[]
-  planting: BudgetLineItem[]
-  monitoring: BudgetLineItem[]
-  cashFlow: CashFlowBar[]
-  cashFlowTable: CashFlowTableRow[]
+  totalStripSub: string
+  totalUsdStrip: string
+
+  // 02 Phase costs
+  phases: BudgetPhaseRow[]
+
+  // 03–07 Costed tables
+  amendments: BudgetTableBlock
+  infrastructure: BudgetTableBlock
+  labor: BudgetTableBlock
+  planting: BudgetTableBlock
+  monitoring: BudgetTableBlock
+
+  // 08 Cash flow
+  cashFlowIntro: string
+  cashFlowBars: CashFlowBar[]
+  cashFlowTable: CashFlowRow[]
+
+  // 09 Carbon revenue
+  carbonCards: CmpCard[]
   carbonRevenue: CarbonRevenueRow[]
-  roiScenarios: RoiScenario[]
+  carbonTotal: { seq: string; low: string; high: string }
+  carbonNote: string
+
+  // 10 ROI
+  roiCards: CmpCard[]
+  breakevenBars: BreakevenBar[]
+  breakevenNote: string
+  nonFinancial: SimpleRow3[]
+
+  // 11 Sensitivity
+  sensitivityIntro: string
   sensitivity: SensitivityRow[]
-  worstCaseSar: number
-  bestCaseSar: number
+  sensitivityCards: CmpCard[]
+
+  // 12 Assumptions
   assumptions: string[]
+  disclaimerBody: string
+  disclaimerFooter: string
 }

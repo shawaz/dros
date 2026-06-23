@@ -1,38 +1,39 @@
 import React from "react"
 import type { FieldExecutionReport } from "@/data/field-execution-report"
+import { FexSectionBar } from "./FexSectionBar"
 
-export const FexPlantingSection: React.FC<{ report: FieldExecutionReport }> = ({ report }) => {
-  const totalPlants = report.plantingLog.reduce((s, r) => s + r.count, 0)
-  const totalArea = report.plantingLog.reduce((s, r) => s + r.areaHa, 0)
-  return (
-    <div>
-      <h2 className="rx-section-title">Planting Record</h2>
-      <table className="rx-table">
-        <thead>
-          <tr>
-            <th>Species</th>
-            <th className="text-right">Count</th>
-            <th>Spacing</th>
-            <th className="text-right">Area (ha)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {report.plantingLog.map((row, i) => (
-            <tr key={i}>
-              <td className="font-medium italic">{row.species}</td>
-              <td className="text-right font-mono">{row.count.toLocaleString()}</td>
-              <td className="font-mono text-xs">{row.spacing}</td>
-              <td className="text-right font-mono">{row.areaHa.toFixed(1)}</td>
-            </tr>
-          ))}
-          <tr className="font-bold bg-gray-50">
-            <td>Total</td>
-            <td className="text-right font-mono">{totalPlants.toLocaleString()}</td>
-            <td />
-            <td className="text-right font-mono">{totalArea.toFixed(1)}</td>
-          </tr>
-        </tbody>
-      </table>
+export const FexPlantingSection: React.FC<{ report: FieldExecutionReport }> = ({ report }) => (
+  <div>
+    <FexSectionBar icon="🌱" num="Section 05" title="Planting Execution Record" color="ok" />
+
+    <div className="fx-form-block">
+      <div className="fx-form-header"><span className="fx-form-title">Planting log</span></div>
+      <div className="fx-form-body">
+        <table className="fx-log-table">
+          <thead>
+            <tr><th>Date</th><th>Species</th><th>Count planted</th><th>Area (ha)</th><th>Spacing</th><th>AMF placed?</th><th>Shade shelter?</th><th>GPS logged?</th></tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}>
+                <td><input className="fx-cell-input" type="date" /></td>
+                <td><input className="fx-cell-input" placeholder={i === 0 ? "e.g., Atriplex" : "—"} /></td>
+                <td><input className="fx-cell-input" placeholder="—" /></td>
+                <td><input className="fx-cell-input" placeholder="—" /></td>
+                <td><input className="fx-cell-input" placeholder={i === 0 ? "e.g., 2×2 m" : "—"} /></td>
+                <td><input className="fx-cell-input" placeholder="Y/N" /></td>
+                <td><input className="fx-cell-input" placeholder="Y/N" /></td>
+                <td><input className="fx-cell-input" placeholder="Y/N" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
-  )
-}
+
+    <div className="fx-gate fx-c-ok">
+      <div className="fx-gate-icon">✓</div>
+      <div className="fx-gate-body">{report.plantingQaNote}</div>
+    </div>
+  </div>
+)

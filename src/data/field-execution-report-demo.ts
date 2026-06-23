@@ -1,123 +1,118 @@
 import type { FieldExecutionReport } from "@/data/field-execution-report"
 
+// Canonical DROS-FEX-2026-001 content, transcribed from
+// ~/Downloads/DROS Field Execution Template.html. Cover fields are overlaid
+// with the live project; the rest is fixed DROS field protocol.
 export const DEMO_FIELD_EXECUTION_REPORT: Omit<FieldExecutionReport, "generatedAt"> = {
   docId: "DROS-FEX-2026-001",
-  projectName: "New Land 1 Restoration",
-  parcel: "Block A — Northern Sector",
+
+  projectName: "—",
+  subtitle:
+    "Operational field document for rehabilitation crews — checklists, daily logs, amendment records, planting sheets, QA checkpoints, and HSE protocols. Print and carry to site.",
+  parcel: "Northern Parcel",
   areaHa: 100,
-  linkedPlan: "DROS-RX-2026-001",
-  fieldLead: "Eng. Khalid Al-Rashidi",
-  teamSize: 12,
-  startDate: "2026-03-15",
-  currentPhase: "Phase 1 — Soil Preparation & Amendment",
+  linkedPlan: "DROS-RPL-2026-001",
+  fieldLead: "—",
+  teamSize: "—",
+  startDate: "—",
+  currentPhase: "Phase 1 — Site prep",
 
   preMobGroups: [
     {
-      title: "Site Access & Safety",
+      title: "Site access & safety",
       badge: "CRITICAL",
+      badgeStatus: "crit",
       items: [
-        { id: "sa-01", title: "Gate & perimeter fence inspected", detail: "All 4,500 m confirmed intact, padlocks replaced", priority: "critical" },
-        { id: "sa-02", title: "Site induction completed for all 12 crew", detail: "Signed HSE briefing sheets on file", priority: "critical" },
-        { id: "sa-03", title: "Emergency evacuation route marked", detail: "GPS waypoints uploaded to site phones", priority: "critical" },
-        { id: "sa-04", title: "First-aid kit & AED confirmed at site office", priority: "required" },
-        { id: "sa-05", title: "Heat-stress protocol printed and posted", detail: "Mandatory 15 min shade break every 90 min above 40°C", priority: "critical" },
+        { title: "Land access permit secured from landowner / MEWA", detail: "Written authorization with parcel ID, date range, and permitted activities" },
+        { title: "HSE risk assessment completed and signed", detail: "Heat stress protocol, first aid location, emergency contacts, nearest hospital identified" },
+        { title: "Vehicle access route confirmed — 4WD clearance verified", detail: "GPS coordinates of access point. Alternative route identified for wet conditions." },
+        { title: "Communications verified — mobile signal or satellite phone available", detail: "Test at site. If no signal, deploy satellite communicator (Garmin InReach or equivalent)." },
       ],
     },
     {
-      title: "Equipment & Materials",
+      title: "Equipment & materials on site",
       badge: "REQUIRED",
+      badgeStatus: "warn",
       items: [
-        { id: "eq-01", title: "Excavator (CAT 320) pre-start check passed", priority: "required" },
-        { id: "eq-02", title: "Drip irrigation reel & fittings inventory confirmed", detail: "48 km main + 210 km laterals on-site", priority: "required" },
-        { id: "eq-03", title: "Gypsum (8 t/ha) delivery receipt verified — 800 t on-site", priority: "critical" },
-        { id: "eq-04", title: "Biochar (3 t/ha) cold-chain temperature log reviewed", detail: "Maintain 4–20°C; reject if >25°C for >4 hr", priority: "critical" },
-        { id: "eq-05", title: "Solar pump (SQFlex) commissioning test passed", detail: "Confirm 5 kW output and battery backup 12 hr", priority: "required" },
-        { id: "eq-06", title: "GPS rover calibrated and base-station set", priority: "confirm" },
+        { title: "GPS unit charged and calibrated (Trimble R2 or equivalent · ±3 m)" },
+        { title: "pH/EC field meter calibrated (Hanna HI98195 or equiv.) — calibration date: ___/___/______" },
+        { title: "Soil auger (stainless steel, not galvanized) + depth ruler + sampling bags", detail: "15–20 × sterile 250 ml zip-locks per depth per point · Pre-printed labels · Permanent marker" },
+        { title: "Cooler box + ice packs for microbial samples (maintain 4°C)", detail: "Sterile 50 ml Falcon tubes × 20 · Nitrile gloves (change between points)" },
+        { title: "Camera (or phone) for photo documentation — GPS-tagged photos" },
+        { title: "Munsell soil colour chart" },
+        { title: "Printed field maps with sample point GPS coordinates marked" },
+        { title: "Amendment materials confirmed delivered and stored on site", detail: "Gypsum · Sulfur · Biochar · Compost · AMF inoculant (cold storage!) · WaterLock · NPK" },
       ],
     },
     {
-      title: "Lab Coordination",
+      title: "Lab coordination",
       badge: "CONFIRM",
+      badgeStatus: "info",
       items: [
-        { id: "lab-01", title: "Baseline soil samples sent to KACST lab", detail: "12 composite samples at 0–30 cm, 30–60 cm", priority: "required" },
-        { id: "lab-02", title: "CoC (Chain of Custody) forms signed and copies kept on site", priority: "required" },
-        { id: "lab-03", title: "Water source EC test completed — result < 6 dS/m", detail: "Reject if EC > 8 dS/m; use tanker instead", priority: "critical" },
-        { id: "lab-04", title: "Amendment application rates confirmed with Site Manager", priority: "confirm" },
+        { title: "Chemical lab courier booked — delivery within 7 days", detail: "Lab: _______________ · Contact: _______________ · Booking ref: _______________" },
+        { title: "Microbial lab courier booked — delivery within 24–48 hours", detail: "Lab: _______________ · Contact: _______________ · Cold chain confirmed" },
+        { title: "Chain of custody forms printed (CoC-SBA-___-A through ___)" },
       ],
     },
   ],
+  preMobTotal: 15,
 
-  materialsManifest: [
-    { material: "Agricultural Gypsum", orderedQty: "800 t", storage: "Covered pallet, dry area" },
-    { material: "Composted Date-Palm Biochar", orderedQty: "300 t", storage: "4–20°C cold store — COLD CHAIN" },
-    { material: "Mycorrhizal Inoculant (Glomus spp.)", orderedQty: "200 kg", storage: "Refrigerated 4–8°C" },
-    { material: "Azospirillum Biostimulant", orderedQty: "500 L", storage: "Cool, dark store <15°C" },
-    { material: "Acacia tortilis seedlings (2 yr)", orderedQty: "4,200 plants", storage: "Shade nursery, irrigate daily" },
-    { material: "Haloxylon ammodendron seedlings (1 yr)", orderedQty: "6,000 plants", storage: "Shade nursery" },
-    { material: "Atriplex halimus cuttings", orderedQty: "8,500 cuttings", storage: "Moist hessian wrap, plant within 72 hr" },
-    { material: "Drip Irrigation Main Lines (PN6 HDPE)", orderedQty: "48 km", storage: "On-site reels, shade" },
-    { material: "Drip Laterals (16 mm pressure-compensating)", orderedQty: "210 km", storage: "On-site reels" },
-    { material: "Slow-Release N-P-K 15-15-15", orderedQty: "50 t", storage: "Dry warehouse, off ground" },
+  materials: [
+    { material: "Gypsum (ag-grade)", ordered: "550 t" },
+    { material: "Elemental sulfur", ordered: "250 t" },
+    { material: "Biochar (IBI-cert)", ordered: "1,500 t" },
+    { material: "Compost (date palm)", ordered: "2,000 t" },
+    { material: "AMF inoculant", ordered: "700 kg", storage: "4–15°C" },
+    { material: "WaterLock KPA", ordered: "5,000 kg" },
+    { material: "Rhizobium inoculant", ordered: "50 kg", storage: "4–8°C" },
+    { material: "Cyanobacteria (Nostoc)", ordered: "300 kg" },
+    { material: "Humic acid (K-humate)", ordered: "2,500 kg" },
+    { material: "NPK + micronutrients", ordered: "Various" },
+  ],
+  coldChainNote:
+    "Cold chain critical: AMF inoculant must be stored at 4–15°C. Rhizobium at 4–8°C. Verify cold storage on arrival. Record temperature at delivery. If above 20°C for >4 hours, reject the batch.",
+
+  amendmentGateNote:
+    "After gypsum + flush: Retest EC at 5 points. All results must show EC <3.0 dS/m and SAR <13. Record results below. If ANY point fails, repeat flush on that zone before proceeding.",
+
+  plantingQaNote:
+    "Planting QA checklist per tree: (1) Pit 50×50×50 cm ✓ (2) Amended backfill ✓ (3) AMF 10–15 g at 5–10 cm ✓ (4) WaterLock 5–10 g at 20–30 cm ✓ (5) Shade shelter installed ✓ (6) Drip emitter connected ✓ (7) GPS coordinate logged ✓",
+
+  irrigationChecklist: [
+    { title: "72-hour pump test completed — yield: _______ m³/hr", detail: "Must exceed 5 m³/hr. If below, identify backup water source before proceeding." },
+    { title: "Water quality tested — EC: _______ dS/m · pH: _______", detail: "If EC >3.0 dS/m, blending with rainwater is mandatory. Record values." },
+    { title: "Storage tanks installed and tested — capacity: _______ m³" },
+    { title: "Subsurface drip network pressure test — all zones ≥1.0 bar" },
+    { title: "Emitter uniformity test — coefficient of uniformity >85%" },
+    { title: "Filtration system installed — disc/mesh filter rated for sandy water" },
+    { title: "Timer/controller programmed — daily schedule for establishment phase" },
   ],
 
-  amendmentLog: [
-    { amendment: "Gypsum (CaSO₄·2H₂O)", rate: "8 t/ha", area: "100 ha", method: "Broadcast + rip to 60 cm", depthCm: "60" },
-    { amendment: "Compost-Biochar Blend (3:1)", rate: "3 t/ha", area: "100 ha", method: "Surface broadcast + disc harrow", depthCm: "20" },
-    { amendment: "Sulfur Powder", rate: "1.2 t/ha", area: "60 ha (high-pH zones)", method: "Broadcast pre-incorporation", depthCm: "30" },
-    { amendment: "Mycorrhizal Inoculant", rate: "2 kg/ha", area: "100 ha", method: "Root-dip at planting + drip injection", depthCm: "0 (root zone)" },
-    { amendment: "Azospirillum Biostimulant", rate: "5 L/ha", area: "100 ha", method: "Drip system injection", depthCm: "0 (via irrigation)" },
-    { amendment: "N-P-K Slow-Release (basal)", rate: "0.5 t/ha", area: "100 ha", method: "Hand broadcast at planting pit", depthCm: "40" },
-  ],
-
-  plantingLog: [
-    { species: "Acacia tortilis", count: 4200, spacing: "5 × 5 m", areaHa: 10.5 },
-    { species: "Haloxylon ammodendron", count: 6000, spacing: "4 × 4 m", areaHa: 9.6 },
-    { species: "Atriplex halimus", count: 8500, spacing: "2 × 3 m", areaHa: 5.1 },
-    { species: "Prosopis cineraria", count: 2100, spacing: "7 × 7 m", areaHa: 10.3 },
-    { species: "Rhanterium epapposum", count: 15000, spacing: "1.5 × 1.5 m (seeded)", areaHa: 33.8 },
-    { species: "Tamarix aphylla", count: 3000, spacing: "4 × 4 m (windbreak)", areaHa: 4.8 },
-  ],
+  samplingNote:
+    "Microbial samples are time-critical. Pull the 100 g sub-sample BEFORE mixing the composite. Place in sterile Falcon tube. On ice within 2 hours. Deliver to lab within 24–48 hours. Do NOT freeze unless lab requests it.",
 
   qaGates: [
-    { gate: "Gate 1 — Amendment Incorporation", condition: "Post-gypsum + ripping", target: "EC < 3.0 dS/m at 30 cm", rowColor: "#fff3cd" },
-    { gate: "Gate 2 — Irrigation Commission", condition: "Before planting begins", target: "All emitters flowing ±10% uniformity", rowColor: "#d1ecf1" },
-    { gate: "Gate 3 — 30-Day Survival Check", condition: "30 days post-planting", target: "≥ 85% establishment rate", rowColor: "#d4edda" },
-    { gate: "Gate 4 — 6-Month NDVI Baseline", condition: "Month 6", target: "NDVI ≥ 0.15 across planted zones", rowColor: "#d4edda" },
-    { gate: "Gate 5 — Year 1 Carbon Audit", condition: "Month 12", target: "Biomass ≥ 1.2 t/ha aboveground", rowColor: "#f8d7da" },
+    { gate: "G1", condition: "EC after gypsum flush", target: "<3.0 dS/m", targetColor: "crit" },
+    { gate: "G1", condition: "SAR after gypsum flush", target: "<13", targetColor: "crit" },
+    { gate: "G2", condition: "pH after sulfur treatment", target: "<7.8", targetColor: "warn" },
+    { gate: "G3", condition: "Soil moisture pre-planting", target: ">0.08 at 20 cm", targetColor: "info" },
+    { gate: "G4", condition: "Seedling survival (month 6)", target: ">70%", targetColor: "ok" },
+    { gate: "G5", condition: "NDVI trend (month 12)", target: "Upward", targetColor: "ok" },
   ],
 
-  hseProtocol: [
-    "Daily toolbox talk at 06:00 before work commences. Attendance mandatory.",
-    "Heat-stress management: mandatory 15-minute rest in shade every 90 minutes when temperature exceeds 40°C.",
-    "PPE: hard hats, steel-toe boots, hi-vis vests, gloves required at all times in active zones.",
-    "Chemical handling: gypsum and sulfur dust — N95 mask + goggles mandatory during spreading.",
-    "Incident reporting: any near-miss or injury logged within 1 hour in the incident register.",
-    "Wildlife protocol: cease operations and contact site manager if Arabian sand gazelle or protected species observed.",
-    "Fire prevention: no open flames within 200 m of plant nursery or fuel storage. Extinguisher every 50 m.",
-    "Hydration: minimum 500 mL water per hour per worker during summer operations.",
+  hseHeatNote:
+    "Heat stress protocol: Field work suspended when ambient temperature exceeds 45°C. Mandatory 15-minute hydration break every 60 minutes when temperature exceeds 38°C. All crew must carry minimum 3L water per person.",
+  hseBriefing: [
+    { title: "All crew briefed on today's tasks and hazards" },
+    { title: "PPE verified: hard hat, steel-toe boots, gloves, sun protection, hi-vis vest" },
+    { title: "First aid kit checked and complete — location: _______________" },
+    { title: "Emergency contact numbers confirmed — nearest hospital: _______________" },
+    { title: "Dust masks available for sulfur / biochar spreading operations" },
+    { title: "Vehicle inspection completed — fuel, tires, coolant, recovery equipment" },
   ],
 
-  weeklyKpis: [
-    { label: "Area Amended (ha)", value: "24 / 100 ha" },
-    { label: "Plants Installed", value: "3,150 / 23,800" },
-    { label: "Drip Line Installed (km)", value: "18 / 258 km" },
-    { label: "Survival Rate (30d)", value: "91%" },
-    { label: "Irrigation Events This Week", value: "5 × 4 hr cycles" },
-    { label: "Soil Samples Dispatched", value: "4 composite" },
-  ],
-
-  coldChainNote:
-    "Biochar and microbial inoculants require cold-chain management. Maintain 4–20°C from point of manufacture to site. Each delivery must include a temperature log. Reject any batch that has exceeded 25°C for more than 4 continuous hours — viability loss is irreversible.",
-
-  heatStressNote:
-    "Summer operations (June–September) require adjusted working hours: 05:30–10:30 and 17:00–20:00. Crew health monitoring mandatory. Stop all heavy earthworks above 45°C ambient.",
-
-  assumptions: [
-    "All amendment quantities are calibrated to 100 ha effective planting area.",
-    "Planting density and spacing follow DROS-RX-2026-001 rehabilitation prescription.",
-    "Water quality: brackish groundwater at EC ≤ 6 dS/m, supplemented by tanker during shortage periods.",
-    "Seedling provenance: local KSA nurseries within 200 km of project site, certified disease-free.",
-    "Weather: planting scheduled outside peak summer (October–April primary window).",
-    "This template is pre-filled by AI from project data and requires review by the site manager before use.",
-  ],
+  disclaimerBody:
+    "This field execution template is part of the DROS rehabilitation management system. All data recorded in this document forms part of the project's chain of custody for carbon credit verification (Verra VCS / SAVCM). Falsification of field records invalidates carbon credit claims for the entire crediting period. Store completed forms securely and upload digital copies to the DROS platform within 48 hours of field activity.",
+  disclaimerFooter:
+    "Template: DROS-FEX-2026-001 · Version: 1.0 · Linked plan: RPL-2026-001 · Print for field use",
 }
