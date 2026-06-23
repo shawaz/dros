@@ -94,7 +94,19 @@ For each candidate: validate real-world suitability at this exact site, re-rank 
     const raw = json?.choices?.[0]?.message?.content ?? ""
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim()
 
-    const parsed = JSON.parse(cleaned)
+    // Some models wrap the JSON in a sentence or trailing note. Parse directly
+    // first; if that fails, extract the outermost {...} block before giving up.
+    let parsed: { validated?: unknown; siteSummary?: unknown; topWarning?: unknown }
+    try {
+      parsed = JSON.parse(cleaned)
+    } catch {
+      const start = cleaned.indexOf("{")
+      const end = cleaned.lastIndexOf("}")
+      if (start === -1 || end <= start) {
+        return NextResponse.json({ available: false, reason: "ai_invalid_json" })
+      }
+      parsed = JSON.parse(cleaned.slice(start, end + 1))
+    }
 
     // Index by id for the client to look up
     const byId: Record<string, { aiRank: number; confidence: string; note: string }> = {}
