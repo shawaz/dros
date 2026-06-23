@@ -141,6 +141,38 @@ export interface SatelliteAssessmentResult {
   reason?: string
 }
 
+// Lightweight variant — only fetches the last 45 days, no historical trend.
+// Used by the heatmap endpoint to get real NDVI/NDMI without full 10-year query.
+export async function getRecentSatelliteHealth(
+  lat: number,
+  lng: number,
+  radiusM: number
+): Promise<{ ndvi: number | null; ndmi: number | null }> {
+  if (!isSentinelHubConfigured()) return { ndvi: null, ndmi: null }
+  try {
+    const token = await getAccessToken()
+    const bbox = aoiToBbox(lat, lng, radiusM)
+    const now = new Date()
+    const from = new Date(now)
+    from.setUTCDate(now.getUTCDate() - 45)
+
+    const [ndviBins, ndmiBins] = await Promise.all([
+      postStats(token, buildStatsRequest(bbox, NDVI_EVALSCRIPT, from.toISOString(), now.toISOString())),
+      postStats(token, buildStatsRequest(bbox, NDMI_EVALSCRIPT, from.toISOString(), now.toISOString())),
+    ])
+
+    const ndviMeans = ndviBins.map(validMean).filter((m): m is number => m !== null)
+    const ndmiMeans = ndmiBins.map(validMean).filter((m): m is number => m !== null)
+
+    return {
+      ndvi: ndviMeans.length > 0 ? round3(average(ndviMeans)) : null,
+      ndmi: ndmiMeans.length > 0 ? round3(average(ndmiMeans)) : null,
+    }
+  } catch {
+    return { ndvi: null, ndmi: null }
+  }
+}
+
 export async function getSatelliteAssessment(
   lat: number,
   lng: number,

@@ -81,7 +81,17 @@ function uniform(min: number, max: number): number {
   return min + Math.random() * (max - min)
 }
 
-function sampleRegion(region: EcoRegion, n = 20): SampledPoint[] {
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function sampleRegion(region: EcoRegion, n = 20, maxOffsetDeg = 0.3): SampledPoint[] {
   const points: SampledPoint[] = []
   for (let i = 0; i < n; i++) {
     const ndvi = uniform(...region.ndviRange)
@@ -92,8 +102,8 @@ function sampleRegion(region: EcoRegion, n = 20): SampledPoint[] {
     const salinity = uniform(...region.salinityRange)
     const aridity = rainfall / Math.max(rainfall + uniform(100, 500), 1)
     const lst = uniform(...region.lstRange)
-    const latOffset = uniform(-2.0, 2.0)
-    const lngOffset = uniform(-2.0, 2.0)
+    const latOffset = uniform(-maxOffsetDeg, maxOffsetDeg)
+    const lngOffset = uniform(-maxOffsetDeg, maxOffsetDeg)
 
     points.push({
       lat: round(region.latCenter + latOffset, 4),
@@ -172,6 +182,9 @@ export interface FindOptimalLocationsInput {
   minAreaHa?: number
   preferredRegion?: string | null
   minSuitability?: number
+  nearLat?: number | null
+  nearLng?: number | null
+  maxOffsetDeg?: number | null
 }
 
 export function findOptimalLocations(input: FindOptimalLocationsInput = {}): OptimalLocationsResult {
@@ -179,13 +192,32 @@ export function findOptimalLocations(input: FindOptimalLocationsInput = {}): Opt
   const minAreaHa = input.minAreaHa ?? 10
   const preferredRegion = input.preferredRegion ?? null
   const minSuitability = input.minSuitability ?? 0.3
+  const nearLat = input.nearLat ?? null
+  const nearLng = input.nearLng ?? null
+  const maxOffsetDeg = input.maxOffsetDeg ?? 0.3
+
+  // When a search location is provided, use the 3 closest eco-regions so
+  // recommendations are genuinely near that point.
+  let regionPool = SAUDI_ECO_REGIONS
+  if (nearLat !== null && nearLng !== null) {
+    regionPool = [...SAUDI_ECO_REGIONS]
+      .sort(
+        (a, b) =>
+          haversineKm(nearLat, nearLng, a.latCenter, a.lngCenter) -
+          haversineKm(nearLat, nearLng, b.latCenter, b.lngCenter)
+      )
+      .slice(0, 3)
+  } else if (preferredRegion) {
+    regionPool = SAUDI_ECO_REGIONS.filter((r) =>
+      r.name.toLowerCase().includes(preferredRegion.toLowerCase())
+    )
+  }
 
   const allCandidates: OptimalLocation[] = []
   const samplesPerRegion = 20
 
-  for (const region of SAUDI_ECO_REGIONS) {
-    if (preferredRegion && !region.name.toLowerCase().includes(preferredRegion.toLowerCase())) continue
-    const points = sampleRegion(region, samplesPerRegion)
+  for (const region of regionPool) {
+    const points = sampleRegion(region, samplesPerRegion, maxOffsetDeg)
     for (const pt of points) {
       const scores = scorePoint(pt)
       if (scores.suitabilityScore >= minSuitability && pt.areaHa >= minAreaHa) {

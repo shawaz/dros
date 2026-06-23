@@ -13,6 +13,9 @@ export async function POST(request: Request) {
       minAreaHa: typeof b.minAreaHa === "number" ? b.minAreaHa : undefined,
       preferredRegion: typeof b.preferredRegion === "string" ? b.preferredRegion : undefined,
       minSuitability: typeof b.minSuitability === "number" ? b.minSuitability : undefined,
+      nearLat: typeof b.nearLat === "number" ? b.nearLat : undefined,
+      nearLng: typeof b.nearLng === "number" ? b.nearLng : undefined,
+      maxOffsetDeg: typeof b.maxOffsetDeg === "number" ? b.maxOffsetDeg : undefined,
     })
   )
 }
