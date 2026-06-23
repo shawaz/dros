@@ -173,17 +173,15 @@ export async function getRecentSatelliteHealth(
   }
 }
 
-export async function getSatelliteAssessment(
+// Fast path — only fetches the last 90 days of NDVI + NDMI.
+// Completes in ~3–5 s, well within Vercel's 30 s function limit.
+export async function getCurrentSatelliteMetrics(
   lat: number,
   lng: number,
   radiusM: number
 ): Promise<SatelliteAssessmentResult> {
   const unavailable = (reason: string): SatelliteAssessmentResult => ({
-    available: false,
-    ndviScore: null,
-    ndviHistory: [],
-    soilMoistureIndex: null,
-    reason,
+    available: false, ndviScore: null, ndviHistory: [], soilMoistureIndex: null, reason,
   })
 
   if (!isSentinelHubConfigured()) return unavailable("sentinel_hub_not_configured")
@@ -192,42 +190,80 @@ export async function getSatelliteAssessment(
     const token = await getAccessToken()
     const bbox = aoiToBbox(lat, lng, radiusM)
     const now = new Date()
-    const tenYearsAgo = new Date(now)
-    tenYearsAgo.setUTCFullYear(now.getUTCFullYear() - 10)
     const recentStart = new Date(now)
-    recentStart.setUTCDate(now.getUTCDate() - 45)
+    recentStart.setUTCDate(now.getUTCDate() - 90)
 
     const [ndviBins, ndmiBins] = await Promise.all([
-      postStats(token, buildStatsRequest(bbox, NDVI_EVALSCRIPT, tenYearsAgo.toISOString(), now.toISOString())),
+      postStats(token, buildStatsRequest(bbox, NDVI_EVALSCRIPT, recentStart.toISOString(), now.toISOString())),
       postStats(token, buildStatsRequest(bbox, NDMI_EVALSCRIPT, recentStart.toISOString(), now.toISOString())),
     ])
 
-    const byYear = new Map<number, number[]>()
-    for (const bin of ndviBins) {
-      const mean = validMean(bin)
-      if (mean === null) continue
-      const year = new Date(bin.interval.from).getUTCFullYear()
-      const values = byYear.get(year) ?? []
-      values.push(mean)
-      byYear.set(year, values)
-    }
-    const ndviHistory = [...byYear.entries()]
-      .map(([year, values]) => ({ year, ndvi: round3(average(values)) }))
-      .sort((a, b) => a.year - b.year)
-
-    if (ndviHistory.length === 0) return unavailable("sentinel_hub_no_data")
-
-    const recentNdviMeans = ndviBins.map(validMean).filter((m): m is number => m !== null)
-    const ndviScore =
-      recentNdviMeans.length > 0
-        ? round3(average(recentNdviMeans.slice(-2)))
-        : ndviHistory[ndviHistory.length - 1].ndvi
+    const ndviMeans = ndviBins.map(validMean).filter((m): m is number => m !== null)
+    const ndviScore = ndviMeans.length > 0 ? round3(average(ndviMeans)) : null
+    if (ndviScore === null) return unavailable("sentinel_hub_no_data")
 
     const ndmiMeans = ndmiBins.map(validMean).filter((m): m is number => m !== null)
     const soilMoistureIndex = ndmiMeans.length > 0 ? round3(average(ndmiMeans)) : null
 
-    return { available: true, ndviScore, ndviHistory, soilMoistureIndex }
+    return { available: true, ndviScore, ndviHistory: [], soilMoistureIndex }
   } catch (err) {
     return unavailable(err instanceof Error ? err.message : "sentinel_hub_request_failed")
+  }
+}
+
+// Slow path — fetches 10-year NDVI history (~30–60 s).
+// Run from a dedicated endpoint with maxDuration = 60; results are cached in DB.
+export async function getNdviHistory(
+  lat: number,
+  lng: number,
+  radiusM: number
+): Promise<{ available: boolean; history: { year: number; ndvi: number }[]; reason?: string }> {
+  if (!isSentinelHubConfigured()) return { available: false, history: [], reason: "sentinel_hub_not_configured" }
+
+  try {
+    const token = await getAccessToken()
+    const bbox = aoiToBbox(lat, lng, radiusM)
+    const now = new Date()
+    const tenYearsAgo = new Date(now)
+    tenYearsAgo.setUTCFullYear(now.getUTCFullYear() - 10)
+
+    const bins = await postStats(
+      token,
+      buildStatsRequest(bbox, NDVI_EVALSCRIPT, tenYearsAgo.toISOString(), now.toISOString())
+    )
+
+    const byYear = new Map<number, number[]>()
+    for (const bin of bins) {
+      const mean = validMean(bin)
+      if (mean === null) continue
+      const year = new Date(bin.interval.from).getUTCFullYear()
+      const arr = byYear.get(year) ?? []
+      arr.push(mean)
+      byYear.set(year, arr)
+    }
+    const history = [...byYear.entries()]
+      .map(([year, values]) => ({ year, ndvi: round3(average(values)) }))
+      .sort((a, b) => a.year - b.year)
+
+    if (history.length === 0) return { available: false, history: [], reason: "sentinel_hub_no_data" }
+    return { available: true, history }
+  } catch (err) {
+    return { available: false, history: [], reason: err instanceof Error ? err.message : "sentinel_hub_request_failed" }
+  }
+}
+
+// Legacy full assessment kept for backwards compat — use getCurrentSatelliteMetrics + getNdviHistory instead.
+export async function getSatelliteAssessment(
+  lat: number,
+  lng: number,
+  radiusM: number
+): Promise<SatelliteAssessmentResult> {
+  const [metrics, histResult] = await Promise.all([
+    getCurrentSatelliteMetrics(lat, lng, radiusM),
+    getNdviHistory(lat, lng, radiusM),
+  ])
+  return {
+    ...metrics,
+    ndviHistory: histResult.history,
   }
 }

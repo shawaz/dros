@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
-import { getProject } from "@/db/queries"
-import { getSatelliteAssessment } from "@/lib/sentinel-hub"
+import { getProject, updateProjectSatellite } from "@/db/queries"
+import { getCurrentSatelliteMetrics } from "@/lib/sentinel-hub"
 import { estimateSurfaceMetrics } from "@/lib/site-data"
 import type { SatelliteMetrics } from "@/data/projects"
 
 export const runtime = "nodejs"
-export const maxDuration = 30
+export const maxDuration = 25
 
 export async function POST(
   _request: Request,
@@ -18,11 +18,11 @@ export async function POST(
     return NextResponse.json({ available: false, reason: "project_not_found" }, { status: 404 })
   }
 
-  const result = await getSatelliteAssessment(project.aoi.lat, project.aoi.lng, project.aoi.radiusM)
+  const result = await getCurrentSatelliteMetrics(project.aoi.lat, project.aoi.lng, project.aoi.radiusM)
   if (!result.available || result.ndviScore === null) {
     return NextResponse.json(
       { available: false, reason: result.reason ?? "sentinel_hub_unavailable" },
-      { status: 502 }
+      { status: 200 }
     )
   }
 
@@ -32,11 +32,14 @@ export async function POST(
     soilMoistureIndex: result.soilMoistureIndex ?? 0,
     surfaceTempC: surfaceMetrics.surfaceTempC,
     albedoEffect: surfaceMetrics.albedoEffect,
-    ndviHistory: result.ndviHistory,
+    // Preserve any existing history already cached in DB
+    ndviHistory: project.satellite?.ndviHistory ?? [],
   }
+
+  await updateProjectSatellite(id, satellite)
 
   return NextResponse.json({
     available: true,
-    project: { ...project, satellite, ndvi: satellite.ndviScore },
+    satellite,
   })
 }

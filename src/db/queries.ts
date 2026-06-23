@@ -138,6 +138,10 @@ export async function updateProjectLabReport(id: string, report: LabReport): Pro
   return getProject(id)
 }
 
+export async function updateProjectSatellite(id: string, satellite: import("@/data/projects").SatelliteMetrics): Promise<void> {
+  await db.update(projectsTable).set({ satellite }).where(eq(projectsTable.id, id))
+}
+
 export async function updateProjectSatelliteReport(id: string, report: SatelliteAssessmentReport): Promise<Project | null> {
   await db.update(projectsTable).set({ satelliteReport: report }).where(eq(projectsTable.id, id))
   return getProject(id)

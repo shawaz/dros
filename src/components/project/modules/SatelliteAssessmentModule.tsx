@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
-import { Loader2, RefreshCw, Satellite } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import { Loader2, RefreshCw, Satellite, Clock } from "lucide-react"
 import { Project, SatelliteMetrics } from "@/data/projects"
 import { Button } from "@/components/ui/button"
 import { SatelliteMapPanel } from "./SatelliteMapPanel"
@@ -21,15 +21,36 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
 }) => {
   const [satellite, setSatellite] = useState<SatelliteMetrics | null>(project.satellite)
   const [refreshing, setRefreshing] = useState(false)
+  const [loadingHistory, setLoadingHistory] = useState(false)
+
+  // Load NDVI history in background on mount if not already cached
+  useEffect(() => {
+    if (satellite?.ndviHistory && satellite.ndviHistory.length > 0) return
+    setLoadingHistory(true)
+    fetch(`/api/projects/${project.id}/satellite-history`, { method: "POST" })
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.available && Array.isArray(json.history) && json.history.length > 0) {
+          setSatellite((prev) => prev ? { ...prev, ndviHistory: json.history } : prev)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id])
 
   const handleRefresh = async () => {
     setRefreshing(true)
     try {
       const res = await fetch(`/api/projects/${project.id}/satellite-assessment`, { method: "POST" })
       const json = await res.json()
-      if (json.available && json.project?.satellite) {
-        setSatellite(json.project.satellite)
-        onToast("Satellite assessment refreshed")
+      if (json.available && json.satellite) {
+        setSatellite((prev) => ({
+          ...json.satellite,
+          // Keep existing history; history endpoint manages its own cache
+          ndviHistory: prev?.ndviHistory ?? json.satellite.ndviHistory,
+        }))
+        onToast("Satellite metrics refreshed")
       } else {
         onToast("Satellite data unavailable right now — try again shortly")
       }
@@ -106,6 +127,12 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
             </div>
           </>
         )}
+        {!hasHistory && loadingHistory && (
+          <div className="mt-4 flex items-center gap-2 text-xs text-muted-custom">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            Loading 10-year NDVI history from Sentinel Hub…
+          </div>
+        )}
       </div>
 
       {satellite ? (
@@ -118,7 +145,15 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
           </div>
 
           <div className="bg-white border border-border rounded-xl p-5">
-            <h3 className="font-sans text-sm font-semibold text-ink">NDVI — 10 Year Trend</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-sans text-sm font-semibold text-ink">NDVI — 10 Year Trend</h3>
+              {loadingHistory && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-custom" />}
+              {!loadingHistory && !hasHistory && (
+                <span className="flex items-center gap-1 text-[11px] text-amber-600">
+                  <Clock className="w-3 h-3" /> History loading in background…
+                </span>
+              )}
+            </div>
             <p className="text-xs text-muted-custom mb-4">Vegetation index decline leading into restoration</p>
             <svg
               width="100%"
