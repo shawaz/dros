@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { db } from "./client"
 import { projectsTable } from "./schema"
 import { projectsData, type Project } from "@/data/projects"
@@ -109,7 +109,37 @@ function projectToRow(project: Project) {
   }
 }
 
+// Columns added to the schema after the initial Turso `db:push`. Production
+// applies schema changes manually (no runtime migrator), so a deploy that adds
+// a column without an accompanying push leaves `SELECT` failing with "no such
+// column" and the whole projects list comes back empty. Adding the columns
+// idempotently here lets the running app self-heal on its next query.
+const RUNTIME_COLUMNS: { name: string; type: string }[] = [
+  { name: "satellite_report", type: "text" },
+  { name: "soil_report", type: "text" },
+  { name: "budget_report", type: "text" },
+  { name: "field_execution_report", type: "text" },
+]
+
+let schemaReady: Promise<void> | null = null
+
+function ensureSchema(): Promise<void> {
+  if (!schemaReady) {
+    schemaReady = (async () => {
+      for (const col of RUNTIME_COLUMNS) {
+        try {
+          await db.run(sql.raw(`ALTER TABLE projects ADD COLUMN ${col.name} ${col.type}`))
+        } catch {
+          // Column already exists — expected on every run after the first.
+        }
+      }
+    })()
+  }
+  return schemaReady
+}
+
 async function seedIfEmpty() {
+  await ensureSchema()
   const rows = await db.select().from(projectsTable).limit(1)
   if (rows.length > 0) return
   for (const project of projectsData) {
@@ -130,6 +160,7 @@ export async function getProject(id: string): Promise<Project | null> {
 }
 
 export async function insertProject(project: Project): Promise<Project> {
+  await ensureSchema()
   await db.insert(projectsTable).values(projectToRow(project))
   return project
 }

@@ -15,6 +15,13 @@
       "when": 1782149275763,
       "tag": "0001_lonely_ogun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782213889550,
+      "tag": "0002_workable_rafael_vega",
+      "breakpoints": true
     }
   ]
 }
