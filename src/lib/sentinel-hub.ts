@@ -7,6 +7,8 @@
 // project's credentials). Copernicus Data Space Ecosystem (CDSE) endpoints
 // reject these credentials entirely, so the legacy Sinergise host is the
 // correct default here, not CDSE.
+import type { LatLng } from "@/data/projects"
+
 const TOKEN_URL = process.env.SENTINEL_HUB_TOKEN_URL ?? "https://services.sentinel-hub.com/oauth/token"
 const STATS_URL = process.env.SENTINEL_HUB_STATS_URL ?? "https://services.sentinel-hub.com/api/v1/statistics"
 
@@ -46,11 +48,20 @@ async function getAccessToken(): Promise<string> {
 }
 
 // Square bbox approximating the circular AOI (lat/lng/radiusM) — adequate
-// for area statistics, not meant to be a precise polygon.
+// for area statistics, not meant to be a precise polygon. Still used by the
+// heatmap's synthetic eco-region centres.
 function aoiToBbox(lat: number, lng: number, radiusM: number): [number, number, number, number] {
   const dLat = radiusM / 111_320
   const dLng = radiusM / (111_320 * Math.cos((lat * Math.PI) / 180))
   return [lng - dLng, lat - dLat, lng + dLng, lat + dLat]
+}
+
+// Bounding box [west, south, east, north] enclosing a polygon AOI. The
+// Statistics API samples a rectangle, so the polygon's bounds are what matter.
+function polygonToBbox(polygon: LatLng[]): [number, number, number, number] {
+  const lats = polygon.map((p) => p.lat)
+  const lngs = polygon.map((p) => p.lng)
+  return [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)]
 }
 
 // Sentinel-2 SCL classes for cloud shadow (3), cloud medium/high probability
@@ -176,9 +187,7 @@ export async function getRecentSatelliteHealth(
 // Fast path — only fetches the last 90 days of NDVI + NDMI.
 // Completes in ~3–5 s, well within Vercel's 30 s function limit.
 export async function getCurrentSatelliteMetrics(
-  lat: number,
-  lng: number,
-  radiusM: number
+  polygon: LatLng[]
 ): Promise<SatelliteAssessmentResult> {
   const unavailable = (reason: string): SatelliteAssessmentResult => ({
     available: false, ndviScore: null, ndviHistory: [], soilMoistureIndex: null, reason,
@@ -188,7 +197,7 @@ export async function getCurrentSatelliteMetrics(
 
   try {
     const token = await getAccessToken()
-    const bbox = aoiToBbox(lat, lng, radiusM)
+    const bbox = polygonToBbox(polygon)
     const now = new Date()
     const recentStart = new Date(now)
     recentStart.setUTCDate(now.getUTCDate() - 90)
@@ -214,15 +223,13 @@ export async function getCurrentSatelliteMetrics(
 // Slow path — fetches 10-year NDVI history (~30–60 s).
 // Run from a dedicated endpoint with maxDuration = 60; results are cached in DB.
 export async function getNdviHistory(
-  lat: number,
-  lng: number,
-  radiusM: number
+  polygon: LatLng[]
 ): Promise<{ available: boolean; history: { year: number; ndvi: number }[]; reason?: string }> {
   if (!isSentinelHubConfigured()) return { available: false, history: [], reason: "sentinel_hub_not_configured" }
 
   try {
     const token = await getAccessToken()
-    const bbox = aoiToBbox(lat, lng, radiusM)
+    const bbox = polygonToBbox(polygon)
     const now = new Date()
     const tenYearsAgo = new Date(now)
     tenYearsAgo.setUTCFullYear(now.getUTCFullYear() - 10)
@@ -254,13 +261,11 @@ export async function getNdviHistory(
 
 // Legacy full assessment kept for backwards compat — use getCurrentSatelliteMetrics + getNdviHistory instead.
 export async function getSatelliteAssessment(
-  lat: number,
-  lng: number,
-  radiusM: number
+  polygon: LatLng[]
 ): Promise<SatelliteAssessmentResult> {
   const [metrics, histResult] = await Promise.all([
-    getCurrentSatelliteMetrics(lat, lng, radiusM),
-    getNdviHistory(lat, lng, radiusM),
+    getCurrentSatelliteMetrics(polygon),
+    getNdviHistory(polygon),
   ])
   return {
     ...metrics,

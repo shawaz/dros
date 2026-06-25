@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { SelectedSite } from "./SiteSelectionMap"
+import { polygonCentroid } from "@/lib/aoi"
 
 interface SiteAssessmentSummaryProps {
   site: SelectedSite
@@ -21,6 +22,12 @@ interface AssessmentResponse {
   ph?: number | null
   organicCarbon?: number | null
   nitrogen?: number | null
+  sandPct?: number | null
+  siltPct?: number | null
+  clayPct?: number | null
+  textureClass?: string | null
+  cec?: number | null
+  bulkDensity?: number | null
   health?: number
   risk?: "SEVERE" | "LOW"
   aridity?: number
@@ -37,7 +44,8 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
   onCreated,
   onToast,
 }) => {
-  const requestKey = `${site.lat}:${site.lng}:${site.radiusM}`
+  const centroid = polygonCentroid(site.polygon)
+  const requestKey = `${centroid.lat}:${centroid.lng}:${site.polygon.length}`
   const [response, setResponse] = useState<{ key: string; data: AssessmentResponse } | null>(null)
   const [name, setName] = useState("")
   const [region, setRegion] = useState("")
@@ -45,7 +53,11 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/site-assessment?lat=${site.lat}&lng=${site.lng}&radiusM=${site.radiusM}`)
+    fetch(`/api/site-assessment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ polygon: site.polygon }),
+    })
       .then((res) => res.json())
       .then((data: AssessmentResponse) => {
         setResponse({ key: requestKey, data })
@@ -55,7 +67,8 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
         }
       })
       .catch(() => setResponse({ key: requestKey, data: { available: false, reason: "request_failed" } }))
-  }, [requestKey, site.lat, site.lng, site.radiusM])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestKey])
 
   const loading = response === null || response.key !== requestKey
   const data = response?.key === requestKey ? response.data : null
@@ -69,10 +82,8 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
       body: JSON.stringify({
         name: name.trim(),
         region: region.trim() || "Saudi Arabia",
-        location: location.trim() || `${site.lat.toFixed(4)}, ${site.lng.toFixed(4)}`,
-        lat: site.lat,
-        lng: site.lng,
-        radiusM: site.radiusM,
+        location: location.trim() || `${centroid.lat.toFixed(4)}, ${centroid.lng.toFixed(4)}`,
+        polygon: site.polygon,
         rainfall: data.rainfall,
         ph: data.ph ?? null,
         carbon_soil: data.organicCarbon ?? null,
@@ -103,7 +114,7 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
       <div className="bg-white border border-border rounded-xl p-5">
         <h3 className="font-sans text-sm font-semibold text-ink mb-1">Site Assessment</h3>
         <p className="text-xs text-muted-custom mb-4">
-          Real rainfall and soil data for {site.lat.toFixed(4)}, {site.lng.toFixed(4)}
+          Real rainfall and soil data for {centroid.lat.toFixed(4)}, {centroid.lng.toFixed(4)} (area centroid)
         </p>
 
         {loading ? (
@@ -136,6 +147,35 @@ export const SiteAssessmentSummary: React.FC<SiteAssessmentSummaryProps> = ({
                 muted={data.organicCarbon == null}
               />
               <Stat label="Aridity Index" value={data.aridity?.toFixed(2) ?? "—"} />
+              <Stat
+                label="Total Nitrogen"
+                value={data.nitrogen != null ? `${data.nitrogen} g/kg` : "Not tested"}
+                muted={data.nitrogen == null}
+              />
+              <Stat
+                label="Texture"
+                value={data.textureClass ?? "Not tested"}
+                muted={!data.textureClass}
+              />
+              <Stat
+                label="Sand / Silt / Clay"
+                value={
+                  data.sandPct != null && data.siltPct != null && data.clayPct != null
+                    ? `${Math.round(data.sandPct)} / ${Math.round(data.siltPct)} / ${Math.round(data.clayPct)}%`
+                    : "Not tested"
+                }
+                muted={data.sandPct == null}
+              />
+              <Stat
+                label="CEC"
+                value={data.cec != null ? `${data.cec} cmol/kg` : "Not tested"}
+                muted={data.cec == null}
+              />
+              <Stat
+                label="Bulk Density"
+                value={data.bulkDensity != null ? `${data.bulkDensity} g/cm³` : "Not tested"}
+                muted={data.bulkDensity == null}
+              />
             </div>
 
             <div className="space-y-3">

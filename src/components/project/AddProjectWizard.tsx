@@ -41,9 +41,11 @@ export const AddProjectWizard: React.FC = () => {
     setStep("species")
     setFetching(true)
     try {
-      const res = await fetch(
-        `/api/site-assessment?lat=${selected.lat}&lng=${selected.lng}&radiusM=${selected.radiusM}`
-      )
+      const res = await fetch(`/api/site-assessment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ polygon: selected.polygon }),
+      })
       const data = await res.json()
       if (data.available) {
         setPreview({

@@ -1,15 +1,15 @@
 "use client"
 
 import React, { useEffect, useRef } from "react"
-import { MapContainer, TileLayer, Circle, useMapEvents, useMap } from "react-leaflet"
+import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { ESRI_WORLD_IMAGERY_URL, NASA_GIBS_NDVI_URL, NASA_GIBS_NDVI_MAX_NATIVE_ZOOM } from "@/lib/map-tiles"
+import type { LatLng } from "@/data/projects"
 
 interface LeafletPickerProps {
   showNdvi: boolean
-  point: { lat: number; lng: number } | null
-  radiusM: number
-  onPick: (point: { lat: number; lng: number }) => void
+  vertices: LatLng[]
+  onAddVertex: (point: LatLng) => void
   flyTarget?: { lat: number; lng: number; ts: number } | null
 }
 
@@ -19,9 +19,9 @@ const SAUDI_BOUNDS: [[number, number], [number, number]] = [
 ]
 const SAUDI_CENTER: [number, number] = [24, 45]
 
-const ClickCapture: React.FC<{ onPick: (point: { lat: number; lng: number }) => void }> = ({ onPick }) => {
+const ClickCapture: React.FC<{ onAddVertex: (point: LatLng) => void }> = ({ onAddVertex }) => {
   useMapEvents({
-    click: (e) => onPick({ lat: e.latlng.lat, lng: e.latlng.lng }),
+    click: (e) => onAddVertex({ lat: e.latlng.lat, lng: e.latlng.lng }),
   })
   return null
 }
@@ -41,9 +41,8 @@ const FlyTo: React.FC<{ target: { lat: number; lng: number; ts: number } | null 
 
 export const LeafletPicker: React.FC<LeafletPickerProps> = ({
   showNdvi,
-  point,
-  radiusM,
-  onPick,
+  vertices,
+  onAddVertex,
   flyTarget,
 }) => {
   return (
@@ -64,15 +63,32 @@ export const LeafletPicker: React.FC<LeafletPickerProps> = ({
           attribution="NASA GIBS / MODIS Terra NDVI"
         />
       )}
-      <ClickCapture onPick={onPick} />
+      <ClickCapture onAddVertex={onAddVertex} />
       <FlyTo target={flyTarget} />
-      {point && (
-        <Circle
-          center={[point.lat, point.lng]}
-          radius={radiusM}
-          pathOptions={{ color: "#2E8B57", fillColor: "#2E8B57", fillOpacity: 0.25 }}
+
+      {/* Filled area once there are at least 3 vertices; before that, just the
+          connecting edges so the user can see the shape forming. */}
+      {vertices.length >= 3 && (
+        <Polygon
+          positions={vertices.map((v) => [v.lat, v.lng])}
+          pathOptions={{ color: "#2E8B57", weight: 2, fillColor: "#2E8B57", fillOpacity: 0.25 }}
         />
       )}
+
+      {/* Vertex handles, numbered by draw order via the marker radius/colour. */}
+      {vertices.map((v, i) => (
+        <CircleMarker
+          key={`${v.lat},${v.lng},${i}`}
+          center={[v.lat, v.lng]}
+          radius={5}
+          pathOptions={{
+            color: "#ffffff",
+            weight: 2,
+            fillColor: i === 0 ? "#1f6e43" : "#2E8B57",
+            fillOpacity: 1,
+          }}
+        />
+      ))}
     </MapContainer>
   )
 }

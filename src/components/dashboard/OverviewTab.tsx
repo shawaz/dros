@@ -91,7 +91,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ projects }) => {
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <h2 className="font-sans text-sm font-semibold text-ink">Project Portfolio</h2>
             <Link
-              href="/?tab=projects"
+              href="/dashboard?tab=projects"
               className="text-xs text-green-custom font-semibold hover:underline cursor-pointer"
             >
               View all →

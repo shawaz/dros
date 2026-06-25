@@ -100,8 +100,6 @@ body {
   font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
-  height: 100vh;
-  overflow: hidden;
 }
 
 @keyframes pulse {
@@ -111,4 +109,19 @@ body {
 
 .pulse-dot {
   animation: pulse 2s infinite;
+}
+
+@keyframes recIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Staggered entrance for ranked recommendation rows. Ends fully visible, so
+   the content is never gated on the animation firing. */
+.rec-in {
+  animation: recIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rec-in { animation: none; }
 }

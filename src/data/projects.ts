@@ -4,6 +4,8 @@ import type { SatelliteAssessmentReport } from './satellite-report'
 import type { SoilBioReport } from './soil-bio-report'
 import type { BudgetReport } from './budget-report'
 import type { FieldExecutionReport } from './field-execution-report'
+import { circleToPolygon } from '@/lib/aoi'
+import { DEMO_SOIL_BIO_REPORT } from './soil-bio-report-demo'
 
 export interface Phase {
   name: string
@@ -65,10 +67,15 @@ export interface DMRVStep {
   status: DMRVStepStatus
 }
 
-export interface AOI {
+export interface LatLng {
   lat: number
   lng: number
-  radiusM: number
+}
+
+// An AOI is a user-drawn polygon (ordered ring of vertices, not explicitly
+// closed). Centre point and area are derived on demand via @/lib/aoi.
+export interface AOI {
+  polygon: LatLng[]
 }
 
 export interface Project {
@@ -169,7 +176,7 @@ export const projectsData: Project[] = [
       { t: 'Biofertilizer inoculation', d: 'Mycorrhizal fungi + nitrogen-fixing bacteria to begin rebuilding soil food web from 4.1 g/kg carbon.' },
     ],
     currentStep: 2,
-    aoi: { lat: 24.7568, lng: 46.9362, radiusM: 1880 },
+    aoi: { polygon: circleToPolygon(24.7568, 46.9362, 1880) },
     satellite: {
       ndviScore: 0.075,
       soilMoistureIndex: 0.046,
@@ -259,7 +266,7 @@ export const projectsData: Project[] = [
     ],
     currentStep: 3,
     // Al Kharj Farmland Buffer has no surveyed coordinates yet — approximate town centroid used as AOI stand-in
-    aoi: { lat: 24.15, lng: 47.30, radiusM: 1880 },
+    aoi: { polygon: circleToPolygon(24.15, 47.30, 1880) },
     satellite: {
       ndviScore: 0.07,
       soilMoistureIndex: 0.030,
@@ -307,7 +314,7 @@ export const projectsData: Project[] = [
       microbial: {
         biomassCarbon: 'low',
         bacterialDiversity: 'low',
-        fungalDiversity: 'low',
+        fungalDiversity: 'very-low',
         nitrogenFixers: 'rare',
         cyanobacteriaPresence: 'trace',
         mycorrhizalFungi: 'absent',
@@ -353,7 +360,7 @@ export const projectsData: Project[] = [
     ],
     carbonSequesteredTons: 0,
     satelliteReport: null,
-    soilReport: null,
+    soilReport: DEMO_SOIL_BIO_REPORT,
     budgetReport: null,
     fieldExecutionReport: null,
   },
@@ -400,7 +407,7 @@ export const projectsData: Project[] = [
     ],
     currentStep: 6,
     // existing `location` field above is bad legacy data (falls in Eastern Europe) — using an approximate North Riyadh point for AOI purposes instead
-    aoi: { lat: 24.85, lng: 46.70, radiusM: 14450 },
+    aoi: { polygon: circleToPolygon(24.85, 46.70, 14450) },
     satellite: {
       ndviScore: 0.47,
       soilMoistureIndex: 0.496,

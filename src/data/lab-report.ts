@@ -27,7 +27,7 @@ export interface CarbonData {
   targetStockMaxTco2eHa: number
 }
 
-export type MicrobialLevel = "absent" | "trace" | "rare" | "low" | "moderate" | "high"
+export type MicrobialLevel = "absent" | "trace" | "rare" | "very-low" | "low" | "moderate" | "high"
 
 export interface DetectedMicrobe {
   species: string

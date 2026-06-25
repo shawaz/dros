@@ -1,13 +1,11 @@
 "use client"
 
 import React, { useState } from "react"
-import Link from "next/link"
-import { FileText, Loader2, RefreshCw, ExternalLink } from "lucide-react"
+import { FileText, Loader2, RefreshCw } from "lucide-react"
 import { Project } from "@/data/projects"
 import { SatelliteAssessmentReport } from "@/data/satellite-report"
 import { Button } from "@/components/ui/button"
-import { buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { SatelliteReportPage } from "@/components/project/report-pages/SatelliteReportPage"
 
 interface Props {
   project: Project
@@ -64,36 +62,21 @@ export const SatelliteReportModule: React.FC<Props> = ({ project, onProjectUpdat
     )
   }
 
-  const date = new Date(report.generatedAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-
   return (
-    <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
-      <FileText className="w-6 h-6 text-green-custom" />
-      <h3 className="font-sans text-sm font-semibold text-ink">Satellite Assessment Report Ready</h3>
-      <p className="text-xs text-muted-custom">
-        {report.reportId} · Generated {date}
-      </p>
-      <div className="flex gap-2 mt-2 flex-wrap justify-center">
-        <Link
-          href={`/projects/${project.id}/satellite-report`}
-          className={cn(buttonVariants({ variant: "default" }))}
-        >
-          <ExternalLink className="w-4 h-4" />
-          View Full Report
-        </Link>
-        <Button variant="outline" onClick={handleGenerate} disabled={generating}>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-muted-custom">
+          {report.reportId} · Generated {new Date(report.generatedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+        </span>
+        <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generating}>
           {generating ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Regenerating…</>
           ) : (
-            <RefreshCw className="w-3.5 h-3.5" />
+            <><RefreshCw className="w-3.5 h-3.5" /> Regenerate</>
           )}
-          Regenerate
         </Button>
       </div>
+      <SatelliteReportPage project={project} report={report} asInline />
     </div>
   )
 }

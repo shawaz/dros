@@ -3,7 +3,7 @@
 import React from "react"
 import { Project } from "@/data/projects"
 import { RehabilitationReport } from "@/data/rehabilitation-report"
-import { ReportLayout, TocSection } from "./ReportLayout"
+import { SectionedReport, SectionedReportSection } from "./SectionedReport"
 import { ReportHeader } from "../modules/rehab-report/ReportHeader"
 import { SoilDiagnosticsSection } from "../modules/rehab-report/SoilDiagnosticsSection"
 import { PriorityRankingSection } from "../modules/rehab-report/PriorityRankingSection"
@@ -15,77 +15,83 @@ import { MonitoringSection } from "../modules/rehab-report/MonitoringSection"
 import { ProcurementSection } from "../modules/rehab-report/ProcurementSection"
 import { SignoffSection } from "../modules/rehab-report/SignoffSection"
 
-const SECTIONS: TocSection[] = [
-  { id: "cover", num: "00", label: "Classification" },
-  { id: "diagnostics", num: "01", label: "Soil Diagnostics" },
-  { id: "priority", num: "02", label: "Priority Ranking" },
-  { id: "treatment", num: "03", label: "Treatment Plan" },
-  { id: "species", num: "04", label: "Species Selection" },
-  { id: "timeline", num: "05", label: "Implementation Timeline" },
-  { id: "carbon", num: "06", label: "Carbon Pathway" },
-  { id: "monitoring", num: "07", label: "Monitoring Protocol" },
-  { id: "procurement", num: "08", label: "Procurement" },
-  { id: "signoff", num: "09", label: "Sign-off" },
-]
-
 interface Props {
   project: Project
   report: RehabilitationReport
+  asInline?: boolean
+  toolbar?: React.ReactNode
 }
 
-export const RehabReportPage: React.FC<Props> = ({ project, report }) => (
-  <ReportLayout
-    backHref={`/projects/${project.id}`}
-    backLabel="Back to Project"
-    reportType="Rehabilitation Report"
-    sections={SECTIONS}
-  >
-    <article className="rx-report">
-      <div id="cover" className="rl-section">
-        <ReportHeader project={project} report={report} />
-      </div>
-      <div className="rx-body">
-        <div id="diagnostics" className="rl-section">
-          <SoilDiagnosticsSection
-            soilPhysical={report.soilPhysical}
-            soilChemical={report.soilChemical}
-            microbial={report.microbial}
-            detectedSpecies={report.detectedSpecies}
-            water={report.water}
-          />
-        </div>
-        <div id="priority" className="rl-section">
-          <PriorityRankingSection priorityProblems={report.priorityProblems} />
-        </div>
-        <div id="treatment" className="rl-section">
-          <TreatmentPlanSection treatment={report.treatment} />
-        </div>
-        <div id="species" className="rl-section">
-          <SpeciesSection species={report.species} />
-        </div>
-        <div id="timeline" className="rl-section">
-          <TimelineSection timeline={report.timeline} totalCostSar={report.totalCostSar} />
-        </div>
-        <div id="carbon" className="rl-section">
-          <CarbonPathwaySection
-            carbonPathway={report.carbonPathway}
-            registrationSteps={report.registrationSteps}
-          />
-        </div>
-        <div id="monitoring" className="rl-section">
-          <MonitoringSection monitoring={report.monitoring} />
-        </div>
-        <div id="procurement" className="rl-section">
-          <ProcurementSection
-            procurement={report.procurement}
-            procurementTotalLow={report.procurementTotalLow}
-            procurementTotalHigh={report.procurementTotalHigh}
-          />
-        </div>
-        <div id="signoff" className="rl-section">
-          <SignoffSection />
-        </div>
-      </div>
-    </article>
-  </ReportLayout>
-)
+export const RehabReportPage: React.FC<Props> = ({ project, report, toolbar }) => {
+  const sections: SectionedReportSection[] = [
+    {
+      id: "diagnostics",
+      label: "Soil Diagnostics",
+      node: (
+        <SoilDiagnosticsSection
+          soilPhysical={report.soilPhysical}
+          soilChemical={report.soilChemical}
+          microbial={report.microbial}
+          detectedSpecies={report.detectedSpecies}
+          water={report.water}
+        />
+      ),
+    },
+    {
+      id: "priority",
+      label: "Priority Ranking",
+      node: <PriorityRankingSection priorityProblems={report.priorityProblems} />,
+    },
+    {
+      id: "treatment",
+      label: "Treatment Plan",
+      node: <TreatmentPlanSection treatment={report.treatment} />,
+    },
+    {
+      id: "species",
+      label: "Species Selection",
+      node: <SpeciesSection species={report.species} />,
+    },
+    {
+      id: "timeline",
+      label: "Implementation Timeline",
+      node: <TimelineSection timeline={report.timeline} totalCostSar={report.totalCostSar} />,
+    },
+    {
+      id: "carbon",
+      label: "Carbon Pathway",
+      node: (
+        <CarbonPathwaySection
+          carbonPathway={report.carbonPathway}
+          registrationSteps={report.registrationSteps}
+        />
+      ),
+    },
+    {
+      id: "monitoring",
+      label: "Monitoring Protocol",
+      node: <MonitoringSection monitoring={report.monitoring} />,
+    },
+    {
+      id: "procurement",
+      label: "Procurement",
+      node: (
+        <ProcurementSection
+          procurement={report.procurement}
+          procurementTotalLow={report.procurementTotalLow}
+          procurementTotalHigh={report.procurementTotalHigh}
+        />
+      ),
+    },
+    { id: "signoff", label: "Sign-off", node: <SignoffSection /> },
+  ]
+
+  return (
+    <SectionedReport
+      cover={<ReportHeader project={project} report={report} />}
+      coverLabel="Classification"
+      sections={sections}
+      toolbar={toolbar}
+    />
+  )
+}

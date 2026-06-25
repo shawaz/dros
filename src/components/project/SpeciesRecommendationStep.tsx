@@ -4,6 +4,7 @@ import React, { useMemo, useState, useEffect } from "react"
 import { Leaf, Droplets, Wind, ArrowRight, CheckCircle2, AlertTriangle, TreePine, Shrub, Wheat, Apple, Sparkles, Loader2, ShieldCheck } from "lucide-react"
 import { recommendSpecies, recommendStrategy } from "@/lib/predict/species-recommender"
 import type { SelectedSite } from "./SiteSelectionMap"
+import { polygonCentroid } from "@/lib/aoi"
 
 interface AssessmentData {
   rainfall: number
@@ -69,23 +70,25 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
   const [aiLoading, setAiLoading]       = useState(true)
   const [aiError, setAiError]           = useState(false)
 
+  const center = useMemo(() => polygonCentroid(site.polygon), [site.polygon])
+
   const strategy = useMemo(() => recommendStrategy({
-    lat: site.lat, lng: site.lng,
+    lat: center.lat, lng: center.lng,
     rainfall: assessment.rainfall,
     aridity: assessment.aridity,
     ph: assessment.ph,
     ndvi: assessment.ndvi,
     health: assessment.health,
-  }), [site, assessment])
+  }), [center, assessment])
 
   const recommendations = useMemo(() => recommendSpecies({
-    lat: site.lat, lng: site.lng,
+    lat: center.lat, lng: center.lng,
     rainfall: assessment.rainfall,
     aridity: assessment.aridity,
     ph: assessment.ph,
     ndvi: assessment.ndvi,
     health: assessment.health,
-  }, 5), [site, assessment])
+  }, 5), [center, assessment])
 
   // Fire AI validation in background immediately on mount
   useEffect(() => {
@@ -98,8 +101,8 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        lat:      site.lat,
-        lng:      site.lng,
+        lat:      center.lat,
+        lng:      center.lng,
         rainfall: assessment.rainfall,
         aridity:  assessment.aridity,
         ph:       assessment.ph ?? null,
@@ -124,7 +127,7 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
       })
 
     return () => { cancelled = true }
-  }, [site, assessment])
+  }, [center, assessment])
 
   // If AI validation is available, sort recommendations by AI rank
   const displayRecs = useMemo(() => {
@@ -196,7 +199,7 @@ export const SpeciesRecommendationStep: React.FC<SpeciesRecommendationStepProps>
           </div>
         </div>
         <p className="text-xs text-muted-custom mb-4">
-          Top 5 from 60+ species ranked for {site.lat.toFixed(3)}°N, {site.lng.toFixed(3)}°E.
+          Top 5 from 60+ species ranked for {center.lat.toFixed(3)}°N, {center.lng.toFixed(3)}°E.
           {aiValidation ? " Rankings and notes reviewed by AI ecologist." : ""}
         </p>
 

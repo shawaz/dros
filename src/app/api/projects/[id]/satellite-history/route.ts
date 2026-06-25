@@ -21,7 +21,7 @@ export async function POST(
     return NextResponse.json({ available: true, history: project.satellite.ndviHistory, cached: true })
   }
 
-  const result = await getNdviHistory(project.aoi.lat, project.aoi.lng, project.aoi.radiusM)
+  const result = await getNdviHistory(project.aoi.polygon)
   if (!result.available) {
     return NextResponse.json({ available: false, reason: result.reason }, { status: 200 })
   }

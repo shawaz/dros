@@ -3,28 +3,43 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { usePathname, useSearchParams, useRouter } from "next/navigation"
-import { LayoutDashboard, Folder, TrendingUp, Map, FileText, Settings, Search } from "lucide-react"
+import { LayoutDashboard, Folder, TrendingUp, Search, LogOut, Loader2 } from "lucide-react"
+import { useClerk } from "@clerk/nextjs"
 import { useProjects } from "@/context/ProjectsContext"
-import { useToast } from "@/context/ToastContext"
+import type { AuthUser } from "@/lib/auth"
 
-export const Sidebar: React.FC = () => {
+export const Sidebar: React.FC<{ user: AuthUser }> = ({ user }) => {
   const { projects } = useProjects()
-  const { showToast } = useToast()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { signOut } = useClerk()
   const [searchValue, setSearchValue] = useState("")
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const tab = searchParams.get("tab") ?? "overview"
-  const onOverview = pathname === "/" && tab === "overview"
-  const onProjectsTab = pathname === "/" && tab === "projects"
-  const onAnalytics = pathname === "/" && tab === "analytics"
+  const onOverview = pathname === "/dashboard" && tab === "overview"
+  const onProjectsTab = pathname === "/dashboard" && tab === "projects"
+  const onAnalytics = pathname === "/dashboard" && tab === "analytics"
   const inProjectsSection = pathname.startsWith("/projects") || onProjectsTab
 
   const handleSearchChange = (value: string) => {
     setSearchValue(value)
-    router.replace(`/?tab=projects&q=${encodeURIComponent(value)}`)
+    router.replace(`/dashboard?tab=projects&q=${encodeURIComponent(value)}`)
   }
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await signOut({ redirectUrl: "/" })
+  }
+
+  const initials =
+    (user.name || user.email)
+      .split(/[\s@.]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "U"
 
   return (
     <aside className="w-[260px] shrink-0 bg-sb flex flex-col h-screen overflow-hidden border-r border-white/10 select-none">
@@ -63,7 +78,7 @@ export const Sidebar: React.FC = () => {
       {/* Navigation Links */}
       <nav className="flex flex-col gap-0.5">
         <Link
-          href="/?tab=overview"
+          href="/dashboard?tab=overview"
           className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${onOverview
               ? "bg-white/10 text-white font-medium"
               : "text-white/50 hover:bg-white/5 hover:text-white/80"
@@ -74,7 +89,7 @@ export const Sidebar: React.FC = () => {
         </Link>
 
         <Link
-          href="/?tab=projects"
+          href="/dashboard?tab=projects"
           className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${inProjectsSection
               ? "bg-white/10 text-white font-medium"
               : "text-white/50 hover:bg-white/5 hover:text-white/80"
@@ -88,7 +103,7 @@ export const Sidebar: React.FC = () => {
         </Link>
 
         <Link
-          href="/?tab=analytics"
+          href="/dashboard?tab=analytics"
           className={`flex items-center gap-2.5 py-2 px-3.5 mx-2 rounded-lg text-[13px] transition-all text-left ${onAnalytics
               ? "bg-white/10 text-white font-medium"
               : "text-white/50 hover:bg-white/5 hover:text-white/80"
@@ -153,17 +168,19 @@ export const Sidebar: React.FC = () => {
       {/* Sidebar Footer */}
       <div className="border-t border-white/10 p-3.5 flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-custom to-[#5aab7a] flex items-center justify-center text-xs font-semibold text-white shrink-0">
-          AK
+          {initials}
         </div>
-        <div>
-          <div className="text-[13px] text-white/80 font-medium">Abdullah K.</div>
-          <div className="text-[10px] text-white/35">Project Lead</div>
+        <div className="min-w-0">
+          <div className="text-[13px] text-white/80 font-medium truncate">{user.name || "Signed in"}</div>
+          <div className="text-[10px] text-white/35 truncate">{user.email}</div>
         </div>
         <button
-          onClick={() => showToast("⚙️ Settings")}
-          className="ml-auto text-white/30 p-1 rounded hover:text-white/70 transition-colors"
+          onClick={handleLogout}
+          disabled={loggingOut}
+          title="Sign out"
+          className="ml-auto text-white/30 p-1 rounded hover:text-white/70 transition-colors disabled:opacity-50 cursor-pointer"
         >
-          <Settings className="w-4 h-4" />
+          {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
         </button>
       </div>
     </aside>

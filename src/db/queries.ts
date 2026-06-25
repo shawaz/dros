@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm"
 import { db } from "./client"
 import { projectsTable } from "./schema"
 import { projectsData, type Project } from "@/data/projects"
+import { normalizeAoi } from "@/lib/aoi"
 import type { RehabilitationReport } from "@/data/rehabilitation-report"
 import type { LabReport } from "@/data/lab-report"
 import type { SatelliteAssessmentReport } from "@/data/satellite-report"
@@ -69,7 +70,7 @@ function rowToProject(row: ProjectRow): Project {
     treatments: row.treatments,
     recs: row.recs,
     currentStep: row.currentStep,
-    aoi: row.aoi,
+    aoi: normalizeAoi(row.aoi),
     satellite: row.satellite ?? null,
     droneLogs: row.droneLogs,
     labReport: row.labReport ?? null,

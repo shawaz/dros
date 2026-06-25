@@ -16,9 +16,8 @@ export async function POST(request: NextRequest) {
     !body.name ||
     !body.region ||
     !body.location ||
-    typeof body.lat !== "number" ||
-    typeof body.lng !== "number" ||
-    typeof body.radiusM !== "number" ||
+    !Array.isArray(body.polygon) ||
+    body.polygon.length < 3 ||
     typeof body.rainfall !== "number" ||
     typeof body.health !== "number" ||
     typeof body.aridity !== "number" ||
@@ -35,9 +34,7 @@ export async function POST(request: NextRequest) {
     name: body.name,
     region: body.region,
     location: body.location,
-    lat: body.lat,
-    lng: body.lng,
-    radiusM: body.radiusM,
+    polygon: body.polygon,
     rainfall: body.rainfall,
     ph: body.ph ?? null,
     carbon_soil: body.carbon_soil ?? null,

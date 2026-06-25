@@ -1,4 +1,4 @@
-import { Satellite, Drone, FlaskConical, BrainCircuit, Shovel, BadgeCheck, Receipt, ClipboardList, LucideIcon } from "lucide-react"
+import { Satellite, Layers, BrainCircuit, Shovel, BadgeCheck, Receipt, ClipboardList, LucideIcon, Sprout, WavesVertical, LandPlot, Lightbulb } from "lucide-react"
 
 export interface RestorationStep {
   step: number
@@ -10,50 +10,45 @@ export interface RestorationStep {
 export const restorationProcessSteps: RestorationStep[] = [
   {
     step: 1,
-    title: "Satellite Assessment",
+    title: "Execution",
+    icon: ClipboardList,
+    description: "Crews log lab results, apply soil treatments, install irrigation, and carry out native planting per the prescription.",
+  },
+  {
+    step: 2,
+    title: "Plan",
+    icon: Lightbulb,
+    description: "Pre-filled operational template for field crews — checklists, logs, amendment records, and QA gates.",
+  },
+  {
+    step: 3,
+    title: "Satellite",
     icon: Satellite,
     description: "Multispectral imagery establishes baseline NDVI, land cover, and degradation extent across the site.",
   },
   {
-    step: 2,
-    title: "Drone Survey & 3D Mapping",
-    icon: Drone,
-    description: "High-resolution aerial mapping captures terrain, drainage lines, and micro-topography for earthworks planning.",
-  },
-  {
-    step: 3,
-    title: "Chemical & Biological Analysis",
-    icon: FlaskConical,
-    description: "Soil sampling measures pH, carbon, and moisture to identify amendments needed before planting.",
-  },
-  {
     step: 4,
-    title: "AI Rehabilitation Prescription",
-    icon: BrainCircuit,
-    description: "Site data feeds a model that recommends species, treatments, and phased budget allocation.",
+    title: "Soil & Bio",
+    icon: LandPlot,
+    description: "Laboratory and biological assessment of soil structure, chemistry, microbial activity, carbon stock, and water availability.",
   },
   {
     step: 5,
-    title: "Field Execution",
-    icon: Shovel,
-    description: "Crews apply soil treatments, install irrigation, and carry out native planting per the prescription.",
-  },
-  {
-    step: 6,
-    title: "Monitoring & Carbon Verification",
-    icon: BadgeCheck,
-    description: "Recurring NDVI and soil surveys verify survival rates and quantify carbon sequestration over time.",
+    title: "Rehabilitation",
+    icon: Sprout,
+    description: "Site data feeds a model that recommends species, treatments, and phased budget allocation.",
   },
   {
     step: 7,
-    title: "Budget Estimation",
+    title: "Budget",
     icon: Receipt,
     description: "AI-generated cost model with phase breakdown, cash flow, carbon ROI, and sensitivity analysis.",
   },
   {
-    step: 8,
-    title: "Field Execution Plan",
-    icon: ClipboardList,
-    description: "Pre-filled operational template for field crews — checklists, logs, amendment records, and QA gates.",
+    step: 6,
+    title: "Carbon",
+    icon: WavesVertical,
+    description: "Recurring NDVI and soil surveys verify survival rates and quantify carbon sequestration over time.",
   },
+
 ]

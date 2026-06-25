@@ -102,7 +102,7 @@ function initWater(d: LabReport["water"]): WaterForm {
     : { enabled: false, groundwaterDepthM: "", groundwaterEcDsM: "", annualRainfallMm: "", runoffCapturePotential: "moderate", floodEventsMinPerYear: "", floodEventsMaxPerYear: "" }
 }
 
-const MICROBIAL_LEVELS: MicrobialLevel[] = ["absent", "trace", "rare", "low", "moderate", "high"]
+const MICROBIAL_LEVELS: MicrobialLevel[] = ["absent", "trace", "rare", "very-low", "low", "moderate", "high"]
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div>

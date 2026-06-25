@@ -1,12 +1,11 @@
-import type { NdviYear, Project, DMRVStep } from "@/data/projects"
+import type { NdviYear, Project, DMRVStep, LatLng } from "@/data/projects"
+import { polygonAreaHa } from "@/lib/aoi"
 
 export interface NewProjectInput {
   name: string
   region: string
   location: string
-  lat: number
-  lng: number
-  radiusM: number
+  polygon: LatLng[]
   rainfall: number
   ph: number | null
   carbon_soil: number | null
@@ -53,9 +52,8 @@ function healthTierColors(health: number) {
   }
 }
 
-function formatArea(radiusM: number): string {
-  const hectares = Math.round((Math.PI * radiusM * radiusM) / 10000)
-  return hectares.toLocaleString("en-US")
+function formatArea(polygon: LatLng[]): string {
+  return Math.round(polygonAreaHa(polygon)).toLocaleString("en-US")
 }
 
 export function buildNewProject(id: string, input: NewProjectInput): Project {
@@ -78,7 +76,7 @@ export function buildNewProject(id: string, input: NewProjectInput): Project {
     carbon_soil: input.carbon_soil,
     aridity: input.aridity,
     lstemp: null,
-    area: formatArea(input.radiusM),
+    area: formatArea(input.polygon),
     cost: "Not yet budgeted",
     timeline: "TBD",
     water: "Not yet assessed",
@@ -92,7 +90,7 @@ export function buildNewProject(id: string, input: NewProjectInput): Project {
     treatments: [],
     recs: [],
     currentStep: 1,
-    aoi: { lat: input.lat, lng: input.lng, radiusM: input.radiusM },
+    aoi: { polygon: input.polygon },
     satellite:
       input.ndvi !== null
         ? {

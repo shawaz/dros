@@ -1,6 +1,7 @@
 import type { Project } from "@/data/projects"
 import type { BudgetReport } from "@/data/budget-report"
 import { isOpenRouterConfigured } from "@/lib/openrouter"
+import { aoiAreaHa } from "@/lib/aoi"
 import { DEMO_BUDGET_REPORT } from "@/data/budget-report-demo"
 
 // The Budget report renders the canonical DROS-BUD-2026-001 financial model
@@ -10,7 +11,7 @@ import { DEMO_BUDGET_REPORT } from "@/data/budget-report-demo"
 // the template and stays reliable even when OpenRouter is unavailable.
 
 function areaHa(project: Project): number {
-  return Math.round((Math.PI * (project.aoi.radiusM / 1000) ** 2) * 100) / 100
+  return Math.round(aoiAreaHa(project.aoi) * 100) / 100
 }
 
 const SYSTEM_PROMPT = `You are a financial analyst for the DROS desert-restoration platform (Saudi Arabia).

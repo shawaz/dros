@@ -1,12 +1,11 @@
 "use client"
 
-import React, { useState } from "react"
-import Link from "next/link"
-import { Receipt, Loader2, RefreshCw, ExternalLink } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import { Receipt, Loader2, RefreshCw } from "lucide-react"
 import { Project } from "@/data/projects"
 import { BudgetReport } from "@/data/budget-report"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { BudgetReportPage } from "@/components/project/report-pages/BudgetReportPage"
 
 interface BudgetReportModuleProps {
   project: Project
@@ -33,6 +32,14 @@ export const BudgetReportModule: React.FC<BudgetReportModuleProps> = ({ project,
       setGenerating(false)
     }
   }
+
+  // Auto-generate the report on stage open when it's missing.
+  useEffect(() => {
+    if (!report && !generating) {
+      handleGenerate()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!report) {
     return (
@@ -61,36 +68,25 @@ export const BudgetReportModule: React.FC<BudgetReportModuleProps> = ({ project,
     )
   }
 
-  const date = new Date(report.generatedAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-
   return (
-    <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
-      <Receipt className="w-6 h-6 text-green-custom" />
-      <h3 className="font-sans text-sm font-semibold text-ink">Budget Report Ready</h3>
-      <p className="text-xs text-muted-custom">
-        Generated {date} · Total: {report.totalSar.toLocaleString()} SAR
-      </p>
-      <div className="flex gap-2 mt-2 flex-wrap justify-center">
-        <Link
-          href={`/projects/${project.id}/budget-report`}
-          className={cn(buttonVariants({ variant: "default" }))}
-        >
-          <ExternalLink className="w-4 h-4" />
-          View Full Report
-        </Link>
-        <Button variant="outline" onClick={handleGenerate} disabled={generating}>
-          {generating ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="w-3.5 h-3.5" />
-          )}
-          Regenerate
-        </Button>
-      </div>
-    </div>
+    <BudgetReportPage
+      project={project}
+      report={report}
+      toolbar={
+        <div className="space-y-2">
+          <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generating} className="w-full">
+            {generating ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Regenerating…</>
+            ) : (
+              <><RefreshCw className="w-3.5 h-3.5" /> Regenerate</>
+            )}
+          </Button>
+          <p className="text-[11px] text-muted-custom leading-snug px-0.5">
+            Generated {new Date(report.generatedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+            {" · "}Total: {report.totalSar.toLocaleString()} SAR
+          </p>
+        </div>
+      }
+    />
   )
 }

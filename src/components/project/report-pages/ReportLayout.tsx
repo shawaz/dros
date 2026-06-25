@@ -11,11 +11,12 @@ export interface TocSection {
 }
 
 interface ReportLayoutProps {
-  backHref: string
-  backLabel: string
+  backHref?: string
+  backLabel?: string
   reportType: string
   sections: TocSection[]
   children: React.ReactNode
+  asInline?: boolean
 }
 
 export const ReportLayout: React.FC<ReportLayoutProps> = ({
@@ -24,10 +25,12 @@ export const ReportLayout: React.FC<ReportLayoutProps> = ({
   reportType,
   sections,
   children,
+  asInline,
 }) => {
   const [activeId, setActiveId] = useState(sections[0]?.id ?? "")
 
   useEffect(() => {
+    if (asInline) return
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -44,7 +47,11 @@ export const ReportLayout: React.FC<ReportLayoutProps> = ({
       if (el) observer.observe(el)
     }
     return () => observer.disconnect()
-  }, [sections])
+  }, [sections, asInline])
+
+  if (asInline) {
+    return <>{children}</>
+  }
 
   return (
     <div className="rl-page">
@@ -68,7 +75,7 @@ export const ReportLayout: React.FC<ReportLayoutProps> = ({
       </aside>
       <div className="rl-main">
         <div className="rl-back-row">
-          <Link href={backHref} className="rl-back-link">
+          <Link href={backHref!} className="rl-back-link">
             ← {backLabel}
           </Link>
         </div>

@@ -18,7 +18,7 @@ export async function POST(
     return NextResponse.json({ available: false, reason: "project_not_found" }, { status: 404 })
   }
 
-  const result = await getCurrentSatelliteMetrics(project.aoi.lat, project.aoi.lng, project.aoi.radiusM)
+  const result = await getCurrentSatelliteMetrics(project.aoi.polygon)
   if (!result.available || result.ndviScore === null) {
     return NextResponse.json(
       { available: false, reason: result.reason ?? "sentinel_hub_unavailable" },

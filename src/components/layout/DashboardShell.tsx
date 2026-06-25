@@ -4,8 +4,9 @@ import React from "react"
 import { ProjectsProvider, useProjects } from "@/context/ProjectsContext"
 import { ToastProvider } from "@/context/ToastContext"
 import { Sidebar } from "./Sidebar"
+import type { AuthUser } from "@/lib/auth"
 
-const ShellBody: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ShellBody: React.FC<{ children: React.ReactNode; user: AuthUser }> = ({ children, user }) => {
   const { projects } = useProjects()
 
   if (!projects) {
@@ -18,7 +19,7 @@ const ShellBody: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-ws font-sans text-ink">
-      <Sidebar />
+      <Sidebar user={user} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto p-6 px-7 scrollbar-thin scrollbar-thumb-border2 scrollbar-track-transparent">
           {children}
@@ -28,11 +29,11 @@ const ShellBody: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   )
 }
 
-export const DashboardShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const DashboardShell: React.FC<{ children: React.ReactNode; user: AuthUser }> = ({ children, user }) => {
   return (
     <ProjectsProvider>
       <ToastProvider>
-        <ShellBody>{children}</ShellBody>
+        <ShellBody user={user}>{children}</ShellBody>
       </ToastProvider>
     </ProjectsProvider>
   )

@@ -1,8 +1,12 @@
 "use client"
 
-import React from "react"
-import { Video, Sprout, Droplets, Wrench } from "lucide-react"
+import React, { useState } from "react"
+import { Video, Sprout, Droplets, Wrench, FlaskConical } from "lucide-react"
 import { Project, KanbanColumn } from "@/data/projects"
+import type { LabReport } from "@/data/lab-report"
+import { Button } from "@/components/ui/button"
+import { LabReportView } from "./chem-bio/LabReportView"
+import { LabReportForm } from "./chem-bio/LabReportForm"
 
 interface FieldExecutionModuleProps {
   project: Project
@@ -15,7 +19,49 @@ const COLUMNS: { id: KanbanColumn; label: string }[] = [
   { id: "verified", label: "Verified" },
 ]
 
-export const FieldExecutionModule: React.FC<FieldExecutionModuleProps> = ({ project }) => {
+function hasAnyData(report: LabReport | null): boolean {
+  if (!report) return false
+  return Boolean(report.physical || report.chemical || report.carbon || report.microbial || report.water)
+}
+
+export const FieldExecutionModule: React.FC<FieldExecutionModuleProps> = ({ project, onToast }) => {
+  const [labReport, setLabReport] = useState<LabReport | null>(project.labReport)
+  const [labMode, setLabMode] = useState<"view" | "edit">("view")
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSaveLab = async (report: LabReport) => {
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/projects/${project.id}/lab-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(report),
+      })
+      const json = await res.json()
+      if (json.available) {
+        setLabReport(json.project.labReport)
+        setLabMode("view")
+      } else {
+        onToast("Couldn't save the lab report. Try again.")
+      }
+    } catch {
+      onToast("Couldn't reach the server. Check your connection and try again.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (labMode === "edit") {
+    return (
+      <LabReportForm
+        initial={labReport}
+        submitting={submitting}
+        onCancel={() => setLabMode("view")}
+        onSubmit={handleSaveLab}
+      />
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -80,6 +126,24 @@ export const FieldExecutionModule: React.FC<FieldExecutionModuleProps> = ({ proj
           <p className="text-xs text-muted-custom">Feed unavailable — no active camera link</p>
         </div>
       </div>
+
+      {/* Lab report */}
+      {hasAnyData(labReport) ? (
+        <LabReportView labReport={labReport as LabReport} onEdit={() => setLabMode("edit")} />
+      ) : (
+        <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
+          <FlaskConical className="w-6 h-6 text-dim" />
+          <h3 className="font-sans text-sm font-semibold text-ink">No Lab Report Yet</h3>
+          <p className="text-xs text-muted-custom max-w-md">
+            Enter this site&rsquo;s physical, chemical, carbon, microbial, and water-availability lab
+            results so they can feed the soil &amp; biological report and rehabilitation prescription.
+          </p>
+          <Button onClick={() => setLabMode("edit")} className="mt-2">
+            <FlaskConical className="w-4 h-4" />
+            Add Lab Report
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

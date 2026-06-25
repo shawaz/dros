@@ -1259,6 +1259,40 @@
   scroll-margin-top: 16px;
 }
 
+/* ---------- Card variant ----------
+ * Renders a single report section as a standalone dashboard card instead of
+ * a page in the continuous formal document. Keeps the inner rx- styling but
+ * drops the paper aesthetic, max-width, centering, and section numbering.
+ */
+
+.rx-report.rx-card {
+  --rx-paper: #ffffff;
+  background: #ffffff;
+  border-color: #E2E8DF;
+  border-radius: 12px;
+  max-width: none;
+  margin: 0;
+  overflow: visible;
+}
+
+.rx-report.rx-card .rx-card-body {
+  padding: 22px 24px;
+}
+
+.rx-report.rx-card .rx-section {
+  padding-top: 0;
+}
+
+.rx-report.rx-card .rx-section-num {
+  display: none;
+}
+
+.rx-report.rx-card .rx-section-title {
+  font-family: var(--rx-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 @media print {
   .rl-page {
     display: block;

@@ -25,13 +25,53 @@ export interface SoilResult {
   ph: number | null
   organicCarbonGPerKg: number | null
   nitrogenGPerKg: number | null
+  // Texture fractions (% of fine earth) at 0–5 cm
+  sandPct: number | null
+  siltPct: number | null
+  clayPct: number | null
+  textureClass: string | null // derived USDA class, e.g. "Sandy loam"
+  cecCmolPerKg: number | null // cation exchange capacity (cmol(c)/kg)
+  bulkDensityGPerCm3: number | null // fine-earth bulk density (g/cm³)
+}
+
+const EMPTY_SOIL: SoilResult = {
+  ph: null,
+  organicCarbonGPerKg: null,
+  nitrogenGPerKg: null,
+  sandPct: null,
+  siltPct: null,
+  clayPct: null,
+  textureClass: null,
+  cecCmolPerKg: null,
+  bulkDensityGPerCm3: null,
+}
+
+// USDA soil texture triangle. Inputs are % of fine earth; assumes sand+silt+clay
+// roughly sum to 100. Returns null if any fraction is missing.
+function usdaTextureClass(sand: number | null, silt: number | null, clay: number | null): string | null {
+  if (sand === null || silt === null || clay === null) return null
+  if (clay >= 40 && silt < 40 && sand <= 45) return "Clay"
+  if (clay >= 40 && silt >= 40) return "Silty clay"
+  if (clay >= 35 && sand > 45) return "Sandy clay"
+  if (clay >= 27 && clay < 40 && sand > 20 && sand <= 45) return "Clay loam"
+  if (clay >= 27 && clay < 40 && sand <= 20) return "Silty clay loam"
+  if (clay >= 20 && clay < 35 && silt < 28 && sand > 45) return "Sandy clay loam"
+  if (clay >= 7 && clay < 27 && silt >= 28 && silt < 50 && sand <= 52) return "Loam"
+  if (silt >= 50 && clay >= 12 && clay < 27) return "Silt loam"
+  if (silt >= 50 && clay < 12) return silt >= 80 ? "Silt" : "Silt loam"
+  if (clay < 7 && silt < 50 && sand > 43 && sand <= 52) return "Sandy loam"
+  if (sand >= 85 && clay < 10) return silt + 1.5 * clay < 15 ? "Sand" : "Loamy sand"
+  if (sand >= 70 && sand < 90) return "Loamy sand"
+  return "Sandy loam"
 }
 
 export async function getSoil(lat: number, lng: number): Promise<SoilResult> {
   try {
-    const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${lng}&lat=${lat}&property=phh2o&property=soc&property=nitrogen&depth=0-5cm&value=mean`
+    const props = ["phh2o", "soc", "nitrogen", "sand", "silt", "clay", "cec", "bdod"]
+    const propParams = props.map((p) => `property=${p}`).join("&")
+    const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${lng}&lat=${lat}&${propParams}&depth=0-5cm&value=mean`
     const res = await fetch(url, { signal: AbortSignal.timeout(15_000) })
-    if (!res.ok) return { ph: null, organicCarbonGPerKg: null, nitrogenGPerKg: null }
+    if (!res.ok) return EMPTY_SOIL
     const json = await res.json()
     const layers: Array<{ name: string; depths: Array<{ values: { mean: number | null } }> }> =
       json?.properties?.layers ?? []
@@ -40,16 +80,32 @@ export async function getSoil(lat: number, lng: number): Promise<SoilResult> {
       const mean = layer?.depths?.[0]?.values?.mean
       return typeof mean === "number" ? mean : null
     }
-    const phRaw = meanFor("phh2o") // mapped in pH*10
-    const socRaw = meanFor("soc") // mapped in dg/kg -> g/kg is /10
-    const nitrogenRaw = meanFor("nitrogen") // mapped in cg/kg -> g/kg is /100
+    // SoilGrids returns integer "mapped" values; each property has its own
+    // conversion factor to reach conventional units.
+    const conv = (name: string, factor: number, dp = 1): number | null => {
+      const raw = meanFor(name)
+      if (raw === null) return null
+      const f = Math.pow(10, dp)
+      return Math.round((raw / factor) * f) / f
+    }
+
+    const sandPct = conv("sand", 10) // g/kg -> %
+    const siltPct = conv("silt", 10)
+    const clayPct = conv("clay", 10)
+
     return {
-      ph: phRaw !== null ? Math.round((phRaw / 10) * 10) / 10 : null,
-      organicCarbonGPerKg: socRaw !== null ? Math.round((socRaw / 10) * 10) / 10 : null,
-      nitrogenGPerKg: nitrogenRaw !== null ? Math.round((nitrogenRaw / 100) * 10) / 10 : null,
+      ph: conv("phh2o", 10), // pH*10 -> pH
+      organicCarbonGPerKg: conv("soc", 10), // dg/kg -> g/kg
+      nitrogenGPerKg: conv("nitrogen", 100), // cg/kg -> g/kg
+      sandPct,
+      siltPct,
+      clayPct,
+      textureClass: usdaTextureClass(sandPct, siltPct, clayPct),
+      cecCmolPerKg: conv("cec", 10), // mmol(c)/kg -> cmol(c)/kg
+      bulkDensityGPerCm3: conv("bdod", 100, 2), // cg/cm³ -> g/cm³
     }
   } catch {
-    return { ph: null, organicCarbonGPerKg: null, nitrogenGPerKg: null }
+    return EMPTY_SOIL
   }
 }
 

@@ -1,6 +1,7 @@
 import type { Project } from "@/data/projects"
 import type { FieldExecutionReport } from "@/data/field-execution-report"
 import { isOpenRouterConfigured } from "@/lib/openrouter"
+import { aoiAreaHa } from "@/lib/aoi"
 import { DEMO_FIELD_EXECUTION_REPORT } from "@/data/field-execution-report-demo"
 
 // The Field Execution Template is a fixed DROS field-protocol document. The
@@ -9,7 +10,7 @@ import { DEMO_FIELD_EXECUTION_REPORT } from "@/data/field-execution-report-demo"
 // date, parcel); on any failure the deterministic project overlay is used.
 
 function areaHa(project: Project): number {
-  return Math.round((Math.PI * (project.aoi.radiusM / 1000) ** 2) * 100) / 100
+  return Math.round(aoiAreaHa(project.aoi) * 100) / 100
 }
 
 function projectOverlay(project: Project): Partial<FieldExecutionReport> {

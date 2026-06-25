@@ -5,8 +5,7 @@ import { Project } from "@/data/projects"
 import { ProjectDetailHeader } from "./ProjectDetailHeader"
 import { ProcessStepper } from "./ProcessStepper"
 import { SatelliteAssessmentModule } from "./modules/SatelliteAssessmentModule"
-import { DroneSurveyModule } from "./modules/DroneSurveyModule"
-import { ChemicalBiologicalModule } from "./modules/ChemicalBiologicalModule"
+import { SoilBioReportModule } from "./modules/soil-report/SoilBioReportModule"
 import { RehabilitationReportModule } from "./modules/rehab-report/RehabilitationReportModule"
 import { FieldExecutionModule } from "./modules/FieldExecutionModule"
 import { MonitoringCarbonModule } from "./modules/MonitoringCarbonModule"
@@ -24,14 +23,13 @@ interface ModuleProps {
 }
 
 const MODULES: Record<number, React.ComponentType<ModuleProps>> = {
-  1: SatelliteAssessmentModule,
-  2: DroneSurveyModule,
-  3: ChemicalBiologicalModule,
-  4: RehabilitationReportModule,
-  5: FieldExecutionModule,
+  1: FieldExecutionModule,
+  2: FieldExecutionReportModule,
+  3: SatelliteAssessmentModule,
+  4: SoilBioReportModule,
+  5: RehabilitationReportModule,
   6: MonitoringCarbonModule,
   7: BudgetReportModule,
-  8: FieldExecutionReportModule,
 }
 
 export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project }) => {

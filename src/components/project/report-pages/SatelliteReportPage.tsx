@@ -27,14 +27,16 @@ const SECTIONS: TocSection[] = [
 interface Props {
   project: Project
   report: SatelliteAssessmentReport
+  asInline?: boolean
 }
 
-export const SatelliteReportPage: React.FC<Props> = ({ project, report }) => (
+export const SatelliteReportPage: React.FC<Props> = ({ project, report, asInline }) => (
   <ReportLayout
     backHref={`/projects/${project.id}`}
     backLabel="Back to Project"
     reportType="Satellite Assessment"
     sections={SECTIONS}
+    asInline={asInline}
   >
     <article className="rx-report">
       <div id="cover" className="rl-section">
