@@ -253,7 +253,10 @@ export async function generateRehabilitationReport(project: Project): Promise<Re
         { role: "user", content: buildPrompt(project) },
       ],
     }),
-    signal: AbortSignal.timeout(60_000),
+    // Stay safely under the route's maxDuration (60s) so the function can
+    // return a response before Vercel kills it (which would surface as a
+    // client-side "network error").
+    signal: AbortSignal.timeout(45_000),
   })
 
   if (!res.ok) {

@@ -202,7 +202,7 @@ export async function generateSatelliteReport(project: Project): Promise<Satelli
         { role: "user", content: buildSatellitePrompt(project) },
       ],
     }),
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(45_000),
   })
 
   if (!res.ok) {

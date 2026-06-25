@@ -228,7 +228,7 @@ export async function generateSoilBioReport(project: Project): Promise<SoilBioRe
         { role: "user", content: buildSoilBioPrompt(project) },
       ],
     }),
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(45_000),
   })
 
   if (!res.ok) {

@@ -22,13 +22,12 @@ export async function POST(
     try {
       report = await generateRehabilitationReport(project)
     } catch (err) {
+      // Never hard-fail: on any error (timeout, bad response, not configured)
+      // fall back to the demo report so the user always gets an editable report
+      // instead of a client-side "network error".
       const msg = err instanceof Error ? err.message : "openrouter_failed"
-      if (msg === "openrouter_not_configured") {
-        report = { ...DEMO_REHABILITATION_REPORT, generatedAt: new Date().toISOString() }
-      } else {
-        console.error("[rehab-report] OpenRouter error:", msg)
-        return NextResponse.json({ available: false, reason: msg }, { status: 502 })
-      }
+      console.error("[rehab-report] OpenRouter error, using demo fallback:", msg)
+      report = { ...DEMO_REHABILITATION_REPORT, generatedAt: new Date().toISOString() }
     }
   } else {
     report = { ...DEMO_REHABILITATION_REPORT, generatedAt: new Date().toISOString() }

@@ -58,9 +58,9 @@ export const OverviewModule: React.FC<OverviewModuleProps> = ({ project }) => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
         {/* Site snapshot */}
-        <div className="lg:col-span-2 bg-white border border-border rounded-xl p-4">
+        <div className="lg:col-span-2 bg-white border border-border rounded-xl p-4 flex flex-col">
           <div className="mb-3">
             <h3 className="font-sans text-sm font-semibold text-ink">Site Snapshot</h3>
             <p className="text-xs text-muted-custom">Current true-color satellite imagery</p>
@@ -69,9 +69,12 @@ export const OverviewModule: React.FC<OverviewModuleProps> = ({ project }) => {
         </div>
 
         {/* Project facts */}
-        <div className="bg-white border border-border rounded-xl p-5">
-          <h3 className="font-sans text-sm font-semibold text-ink mb-3">Project Details</h3>
-          <dl className="space-y-2.5">
+        <div className="bg-white border border-border rounded-xl p-4 flex flex-col">
+          <div className="mb-3">
+            <h3 className="font-sans text-sm font-semibold text-ink">Project Details</h3>
+            <p className="text-xs text-muted-custom">Site parameters and estimates</p>
+          </div>
+          <dl className="flex flex-col justify-between flex-1 gap-2.5">
             {facts.map((f) => (
               <div key={f.label} className="flex items-start justify-between gap-3 text-xs">
                 <dt className="text-muted-custom shrink-0">{f.label}</dt>
