@@ -242,6 +242,38 @@ export async function updateProjectCustomHtml(
   return getProject(id)
 }
 
+// Editable, user-facing project metadata (no derived/report data).
+export type ProjectMeta = Partial<
+  Pick<Project, "name" | "region" | "location" | "status" | "risk" | "area" | "timeline" | "water" | "cost">
+>
+
+export async function updateProjectMeta(id: string, fields: ProjectMeta): Promise<Project | null> {
+  const allowed: (keyof ProjectMeta)[] = [
+    "name",
+    "region",
+    "location",
+    "status",
+    "risk",
+    "area",
+    "timeline",
+    "water",
+    "cost",
+  ]
+  const set: Record<string, unknown> = {}
+  for (const key of allowed) {
+    if (fields[key] !== undefined && fields[key] !== null) set[key] = fields[key]
+  }
+  if (Object.keys(set).length > 0) {
+    await db.update(projectsTable).set(set).where(eq(projectsTable.id, id))
+  }
+  return getProject(id)
+}
+
+export async function deleteProject(id: string): Promise<boolean> {
+  await db.delete(projectsTable).where(eq(projectsTable.id, id))
+  return true
+}
+
 export async function nextProjectId(): Promise<string> {
   const rows = await db.select({ id: projectsTable.id }).from(projectsTable)
   const maxN = rows.reduce((max, row) => {

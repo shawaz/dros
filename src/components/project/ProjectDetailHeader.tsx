@@ -4,6 +4,7 @@ import React from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin } from "lucide-react"
 import { Project } from "@/data/projects"
+import { ProjectActions } from "./ProjectActions"
 
 interface ProjectDetailHeaderProps {
   project: Project
@@ -14,13 +15,16 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({ projec
 
   return (
     <div className="space-y-3.5">
-      <button
-        onClick={() => router.back()}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-custom hover:text-ink transition-colors cursor-pointer"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back
-      </button>
+      <div className="flex items-center justify-between gap-3">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-custom hover:text-ink transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back
+        </button>
+        <ProjectActions project={project} />
+      </div>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
