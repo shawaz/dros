@@ -123,6 +123,13 @@ export interface Project {
   soilReport: SoilBioReport | null
   budgetReport: BudgetReport | null
   fieldExecutionReport: FieldExecutionReport | null
+  customHtml: CustomHtml | null
+}
+
+/** Per-project edited HTML overrides for the template-based stages. */
+export interface CustomHtml {
+  droneField?: string
+  execution?: string
 }
 
 export interface ActivityItem {
@@ -221,6 +228,7 @@ export const projectsData: Project[] = [
     soilReport: null,
     budgetReport: null,
     fieldExecutionReport: null,
+    customHtml: null,
   },
   {
     id: 'DROS-02',
@@ -363,6 +371,7 @@ export const projectsData: Project[] = [
     soilReport: DEMO_SOIL_BIO_REPORT,
     budgetReport: null,
     fieldExecutionReport: null,
+    customHtml: null,
   },
   {
     id: 'DROS-03',
@@ -502,6 +511,7 @@ export const projectsData: Project[] = [
     soilReport: null,
     budgetReport: null,
     fieldExecutionReport: null,
+    customHtml: null,
   }
 ]
 

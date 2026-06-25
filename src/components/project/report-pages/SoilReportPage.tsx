@@ -20,9 +20,10 @@ interface Props {
   report: SoilBioReport
   asInline?: boolean
   toolbar?: React.ReactNode
+  leading?: SectionedReportSection[]
 }
 
-export const SoilReportPage: React.FC<Props> = ({ project, report, toolbar }) => {
+export const SoilReportPage: React.FC<Props> = ({ project, report, toolbar, leading }) => {
   const lab = project.labReport
   const sections: SectionedReportSection[] = [
     { id: "sampling", label: "Sampling Methodology", node: <SamplingSection project={project} /> },
@@ -108,6 +109,7 @@ export const SoilReportPage: React.FC<Props> = ({ project, report, toolbar }) =>
       cover={<SoilBioReportHeader project={project} report={report} />}
       coverLabel="Report Overview"
       sections={sections}
+      leading={leading}
       toolbar={toolbar}
     />
   )

@@ -84,6 +84,7 @@ function rowToProject(row: ProjectRow): Project {
     soilReport: row.soilReport ?? null,
     budgetReport: validBudgetReport(row.budgetReport),
     fieldExecutionReport: validFieldExecutionReport(row.fieldExecutionReport),
+    customHtml: row.customHtml ?? null,
   }
 }
 
@@ -133,6 +134,7 @@ function projectToRow(project: Project) {
     soilReport: project.soilReport,
     budgetReport: project.budgetReport,
     fieldExecutionReport: project.fieldExecutionReport,
+    customHtml: project.customHtml,
   }
 }
 
@@ -146,6 +148,7 @@ const RUNTIME_COLUMNS: { name: string; type: string }[] = [
   { name: "soil_report", type: "text" },
   { name: "budget_report", type: "text" },
   { name: "field_execution_report", type: "text" },
+  { name: "custom_html", type: "text" },
 ]
 
 let schemaReady: Promise<void> | null = null
@@ -223,6 +226,19 @@ export async function updateProjectBudgetReport(id: string, report: BudgetReport
 
 export async function updateProjectFieldExecutionReport(id: string, report: FieldExecutionReport): Promise<Project | null> {
   await db.update(projectsTable).set({ fieldExecutionReport: report }).where(eq(projectsTable.id, id))
+  return getProject(id)
+}
+
+export async function updateProjectCustomHtml(
+  id: string,
+  key: "droneField" | "execution",
+  html: string
+): Promise<Project | null> {
+  await ensureSchema()
+  const current = await getProject(id)
+  if (!current) return null
+  const customHtml = { ...(current.customHtml ?? {}), [key]: html }
+  await db.update(projectsTable).set({ customHtml }).where(eq(projectsTable.id, id))
   return getProject(id)
 }
 

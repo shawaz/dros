@@ -1,4 +1,4 @@
-import { Satellite, Layers, BrainCircuit, Shovel, BadgeCheck, Receipt, ClipboardList, LucideIcon, Sprout, WavesVertical, LandPlot, Lightbulb } from "lucide-react"
+import { LayoutDashboard, Satellite, Drone, FlaskConical, Sprout, Receipt, ClipboardList, Leaf, LucideIcon } from "lucide-react"
 
 export interface RestorationStep {
   step: number
@@ -10,26 +10,26 @@ export interface RestorationStep {
 export const restorationProcessSteps: RestorationStep[] = [
   {
     step: 1,
-    title: "Execution",
-    icon: ClipboardList,
-    description: "Crews log lab results, apply soil treatments, install irrigation, and carry out native planting per the prescription.",
+    title: "Overview",
+    icon: LayoutDashboard,
+    description: "Project status at a glance — biomass growth, carbon sequestration, and dMRV verification progress.",
   },
   {
     step: 2,
-    title: "Plan",
-    icon: Lightbulb,
-    description: "Pre-filled operational template for field crews — checklists, logs, amendment records, and QA gates.",
-  },
-  {
-    step: 3,
     title: "Satellite",
     icon: Satellite,
     description: "Multispectral imagery establishes baseline NDVI, land cover, and degradation extent across the site.",
   },
   {
+    step: 3,
+    title: "Drone & Field",
+    icon: Drone,
+    description: "High-resolution drone mapping divides the site into a treatment grid with cell-level soil and biology profiles.",
+  },
+  {
     step: 4,
-    title: "Soil & Bio",
-    icon: LandPlot,
+    title: "Bio & Chemical",
+    icon: FlaskConical,
     description: "Laboratory and biological assessment of soil structure, chemistry, microbial activity, carbon stock, and water availability.",
   },
   {
@@ -39,16 +39,21 @@ export const restorationProcessSteps: RestorationStep[] = [
     description: "Site data feeds a model that recommends species, treatments, and phased budget allocation.",
   },
   {
-    step: 7,
+    step: 6,
     title: "Budget",
     icon: Receipt,
     description: "AI-generated cost model with phase breakdown, cash flow, carbon ROI, and sensitivity analysis.",
   },
   {
-    step: 6,
+    step: 7,
+    title: "Execution",
+    icon: ClipboardList,
+    description: "Operational field execution plan — crews, machinery, SOPs, zone work plans, and contingency procedures.",
+  },
+  {
+    step: 8,
     title: "Carbon",
-    icon: WavesVertical,
+    icon: Leaf,
     description: "Recurring NDVI and soil surveys verify survival rates and quantify carbon sequestration over time.",
   },
-
 ]

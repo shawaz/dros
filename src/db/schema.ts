@@ -9,6 +9,7 @@ import type {
   ResourceInventory,
   BiomassPoint,
   DMRVStep,
+  CustomHtml,
 } from "@/data/projects"
 import type { RehabilitationReport } from "@/data/rehabilitation-report"
 import type { LabReport } from "@/data/lab-report"
@@ -62,4 +63,6 @@ export const projectsTable = sqliteTable("projects", {
   soilReport: text("soil_report", { mode: "json" }).$type<SoilBioReport>(),
   budgetReport: text("budget_report", { mode: "json" }).$type<BudgetReport>(),
   fieldExecutionReport: text("field_execution_report", { mode: "json" }).$type<FieldExecutionReport>(),
+  // Per-project edited HTML for the template-based stages (Drone & Field, Execution).
+  customHtml: text("custom_html", { mode: "json" }).$type<CustomHtml>(),
 })

@@ -2,6 +2,7 @@
 
 import React from "react"
 import { useScrollSpy } from "@/hooks/useScrollSpy"
+import { ReportErrorBoundary } from "@/components/project/ReportErrorBoundary"
 
 export interface SectionedReportSection {
   id: string
@@ -15,6 +16,8 @@ interface SectionedReportProps {
   /** Nav label for the cover card. */
   coverLabel?: string
   sections: SectionedReportSection[]
+  /** Extra sections rendered (as raw nodes) before the cover and listed first in the menu. */
+  leading?: SectionedReportSection[]
   /** Rendered at the top of the section menu (e.g. generate/regenerate button). */
   toolbar?: React.ReactNode
 }
@@ -28,9 +31,11 @@ export const SectionedReport: React.FC<SectionedReportProps> = ({
   cover,
   coverLabel = "Overview",
   sections,
+  leading = [],
   toolbar,
 }) => {
   const navItems = [
+    ...leading.map((s) => ({ id: s.id, label: s.label })),
     ...(cover ? [{ id: "cover", label: coverLabel }] : []),
     ...sections.map((s) => ({ id: s.id, label: s.label })),
   ]
@@ -64,14 +69,21 @@ export const SectionedReport: React.FC<SectionedReportProps> = ({
 
       {/* Content */}
       <div className="flex-1 min-w-0 w-full space-y-6 pb-6">
+        {leading.map((s) => (
+          <div key={s.id} id={s.id} className="scroll-mt-4">
+            {s.node}
+          </div>
+        ))}
         {cover && (
           <div id="cover" className="rx-report rx-card overflow-hidden scroll-mt-4">
-            {cover}
+            <ReportErrorBoundary>{cover}</ReportErrorBoundary>
           </div>
         )}
         {sections.map((s) => (
           <div key={s.id} id={s.id} className="rx-report rx-card scroll-mt-4">
-            <div className="rx-card-body">{s.node}</div>
+            <div className="rx-card-body">
+              <ReportErrorBoundary>{s.node}</ReportErrorBoundary>
+            </div>
           </div>
         ))}
       </div>

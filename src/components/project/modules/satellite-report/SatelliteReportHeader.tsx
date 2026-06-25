@@ -54,7 +54,9 @@ export const SatelliteReportHeader: React.FC<Props> = ({ project, report }) => {
           </dl>
           <dl className="rx-cover-meta-item">
             <dt>Risk level</dt>
-            <dd style={{ color: riskColor, fontWeight: 700 }}>{report.riskLabel.split("—")[0].trim()}</dd>
+            <dd style={{ color: riskColor, fontWeight: 700 }}>
+              {report.riskLabel ? report.riskLabel.split("—")[0].trim() : (report.riskLevel ?? "—")}
+            </dd>
           </dl>
           <dl className="rx-cover-meta-item">
             <dt>Health score</dt>

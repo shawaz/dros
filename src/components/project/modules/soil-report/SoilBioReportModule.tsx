@@ -1,21 +1,28 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { FileText, Loader2, RefreshCw } from "lucide-react"
+import { FileText, FlaskConical, Loader2, RefreshCw, Pencil } from "lucide-react"
 import { Project } from "@/data/projects"
 import { SoilBioReport } from "@/data/soil-bio-report"
 import { Button } from "@/components/ui/button"
 import { SoilReportPage } from "@/components/project/report-pages/SoilReportPage"
+import { SectionedReportSection } from "@/components/project/report-pages/SectionedReport"
+import { ReportEditPanel } from "@/components/project/ReportEditPanel"
 
 interface Props {
   project: Project
   onProjectUpdate?: (updated: Project) => void
   onToast: (msg: string) => void
+  /** When the soil report needs lab data, offer this action to add it inline. */
+  onLabEdit?: () => void
+  /** Extra sections (e.g. lab data) rendered first under the shared section menu. */
+  leading?: SectionedReportSection[]
 }
 
-export const SoilBioReportModule: React.FC<Props> = ({ project, onProjectUpdate, onToast }) => {
+export const SoilBioReportModule: React.FC<Props> = ({ project, onProjectUpdate, onToast, onLabEdit, leading }) => {
   const [report, setReport] = useState<SoilBioReport | null>(project.soilReport)
   const [generating, setGenerating] = useState(false)
+  const [editing, setEditing] = useState(false)
 
   const handleGenerate = async () => {
     setGenerating(true)
@@ -47,39 +54,67 @@ export const SoilBioReportModule: React.FC<Props> = ({ project, onProjectUpdate,
     if (!project.labReport) {
       return (
         <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
-          <FileText className="w-6 h-6 text-dim" />
+          <FlaskConical className="w-6 h-6 text-dim" />
           <h3 className="font-sans text-sm font-semibold text-ink">Lab Report Required</h3>
           <p className="text-xs text-muted-custom max-w-md">
             The soil &amp; biological assessment is generated from laboratory data. Add this site&rsquo;s
-            lab results in the <strong>Field Execution</strong> stage, then return here to generate the
-            report.
+            physical, chemical, carbon, microbial, and water-availability lab results to generate the report.
           </p>
+          {onLabEdit && (
+            <Button onClick={onLabEdit} className="mt-2">
+              <FlaskConical className="w-4 h-4" />
+              Add Lab Report
+            </Button>
+          )}
         </div>
       )
     }
     return (
-      <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
-        <FileText className="w-6 h-6 text-dim" />
-        <h3 className="font-sans text-sm font-semibold text-ink">No Assessment Report Yet</h3>
-        <p className="text-xs text-muted-custom max-w-md">
-          Generate a formal soil and biological assessment report from laboratory data — physical
-          structure, chemical properties, microbial community analysis, carbon stock estimates,
-          water availability, and a satellite vs. lab calibration table.
-        </p>
-        <Button onClick={handleGenerate} disabled={generating} className="mt-2">
-          {generating ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Generating…
-            </>
-          ) : (
-            <>
-              <FileText className="w-4 h-4" />
-              Generate Assessment Report
-            </>
-          )}
-        </Button>
+      <div className="space-y-5">
+        {leading?.map((s) => (
+          <div key={s.id} id={s.id} className="scroll-mt-4">
+            {s.node}
+          </div>
+        ))}
+        <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
+          <FileText className="w-6 h-6 text-dim" />
+          <h3 className="font-sans text-sm font-semibold text-ink">No Assessment Report Yet</h3>
+          <p className="text-xs text-muted-custom max-w-md">
+            Generate a formal soil and biological assessment report from laboratory data — physical
+            structure, chemical properties, microbial community analysis, carbon stock estimates,
+            water availability, and a satellite vs. lab calibration table.
+          </p>
+          <Button onClick={handleGenerate} disabled={generating} className="mt-2">
+            {generating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Generating…
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4" />
+                Generate Assessment Report
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+    )
+  }
+
+  if (editing) {
+    return (
+      <ReportEditPanel
+        initial={report}
+        saveUrl={`/api/projects/${project.id}/soil-report`}
+        title="Editing Soil & Bio Report"
+        onCancel={() => setEditing(false)}
+        onSaved={(r) => {
+          setReport(r)
+          setEditing(false)
+        }}
+        onToast={onToast}
+      />
     )
   }
 
@@ -87,8 +122,12 @@ export const SoilBioReportModule: React.FC<Props> = ({ project, onProjectUpdate,
     <SoilReportPage
       project={project}
       report={report}
+      leading={leading}
       toolbar={
         <div className="space-y-2">
+          <Button size="sm" onClick={() => setEditing(true)} className="w-full">
+            <Pencil className="w-3.5 h-3.5" /> Edit
+          </Button>
           <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generating} className="w-full">
             {generating ? (
               <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Regenerating…</>

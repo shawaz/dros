@@ -1,12 +1,14 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Loader2, RefreshCw, Satellite, Clock } from "lucide-react"
+import { Loader2, RefreshCw, Satellite, Clock, AlertTriangle, Pencil } from "lucide-react"
 import { Project, SatelliteMetrics } from "@/data/projects"
 import { SatelliteAssessmentReport } from "@/data/satellite-report"
 import { Button } from "@/components/ui/button"
 import { useScrollSpy } from "@/hooks/useScrollSpy"
 import { SatelliteMapPanel } from "./SatelliteMapPanel"
+import { ReportErrorBoundary } from "@/components/project/ReportErrorBoundary"
+import { ReportEditPanel } from "@/components/project/ReportEditPanel"
 import { SatelliteReportHeader } from "./satellite-report/SatelliteReportHeader"
 import { DataSourcesSection } from "./satellite-report/DataSourcesSection"
 import { ParcelOverviewSection } from "./satellite-report/ParcelOverviewSection"
@@ -37,6 +39,7 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
   const [generating, setGenerating] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [mapLayer, setMapLayer] = useState<"ndvi" | "true-color">("ndvi")
+  const [editing, setEditing] = useState(false)
 
   useEffect(() => {
     if (satellite?.ndviHistory && satellite.ndviHistory.length > 0) return
@@ -152,12 +155,31 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
     "view"
   )
 
+  if (editing && report) {
+    return (
+      <ReportEditPanel
+        initial={report}
+        saveUrl={`/api/projects/${project.id}/satellite-report`}
+        title="Editing Satellite Report"
+        onCancel={() => setEditing(false)}
+        onSaved={(r) => {
+          setReport(r)
+          setEditing(false)
+        }}
+        onToast={onToast}
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col lg:flex-row gap-5 items-start">
       {/* Section menu */}
       <nav className="w-full lg:w-56 lg:shrink-0 lg:sticky lg:top-4 bg-white border border-border rounded-xl p-2">
         {satellite && report && (
-          <div className="px-1 pt-1 pb-3 mb-1 border-b border-border">
+          <div className="px-1 pt-1 pb-3 mb-1 border-b border-border space-y-2">
+            <Button size="sm" onClick={() => setEditing(true)} className="w-full">
+              <Pencil className="w-3.5 h-3.5" /> Edit
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -339,49 +361,72 @@ export const SatelliteAssessmentModule: React.FC<SatelliteAssessmentModuleProps>
                 })}
               </span>
 
-              <div className="rx-report rx-card overflow-hidden">
-                <SatelliteReportHeader project={projectWithSatellite} report={report} />
-              </div>
+              <ReportErrorBoundary
+                key={report.generatedAt}
+                fallback={
+                  <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">
+                    <AlertTriangle className="w-6 h-6 text-amber-custom" />
+                    <h3 className="font-sans text-sm font-semibold text-ink">Report Data Incomplete</h3>
+                    <p className="text-xs text-muted-custom max-w-md">
+                      This satellite report is missing some fields (an older or partial generation).
+                      Regenerate to rebuild it from the latest imagery.
+                    </p>
+                    <Button onClick={handleGenerateReport} disabled={generating} className="mt-2">
+                      {generating ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Regenerating…</>
+                      ) : (
+                        <><RefreshCw className="w-4 h-4" /> Regenerate Report</>
+                      )}
+                    </Button>
+                  </div>
+                }
+              >
+                <div className="space-y-6">
+                  <div className="rx-report rx-card overflow-hidden">
+                    <SatelliteReportHeader project={projectWithSatellite} report={report} />
+                  </div>
 
-              <SectionCard id="sources">
-                <DataSourcesSection />
-              </SectionCard>
-              <SectionCard id="overview">
-                <ParcelOverviewSection project={project} />
-              </SectionCard>
-              <SectionCard id="vegetation">
-                <VegetationSection
-                  ndviScore={project.ndvi ?? 0}
-                  ndviDistribution={report.ndviDistribution}
-                />
-              </SectionCard>
-              <SectionCard id="climate">
-                <ClimateMoistureSection climateAssessment={report.climateAssessment} />
-              </SectionCard>
-              <SectionCard id="soil-indicators">
-                <SoilIndicatorsSection soilIndicators={report.soilIndicators} />
-              </SectionCard>
-              <SectionCard id="health">
-                <HealthScoreSection
-                  healthScore={project.health}
-                  degradation={project.degrad}
-                  riskLevel={report.riskLevel}
-                  healthBreakdown={report.healthBreakdown}
-                />
-              </SectionCard>
-              <SectionCard id="change-trend">
-                <TrendSection trendPeriods={report.trendPeriods} trendSummary={report.trendSummary} />
-              </SectionCard>
-              <SectionCard id="zones">
-                <PriorityZonesSection priorityZones={report.priorityZones} />
-              </SectionCard>
-              <SectionCard id="recommendations">
-                <RecommendationsSection
-                  recommendations={report.recommendations}
-                  treatmentSummary={report.treatmentSummary}
-                  keyFindings={report.keyFindings}
-                />
-              </SectionCard>
+                  <SectionCard id="sources">
+                    <DataSourcesSection />
+                  </SectionCard>
+                  <SectionCard id="overview">
+                    <ParcelOverviewSection project={project} />
+                  </SectionCard>
+                  <SectionCard id="vegetation">
+                    <VegetationSection
+                      ndviScore={project.ndvi ?? 0}
+                      ndviDistribution={report.ndviDistribution}
+                    />
+                  </SectionCard>
+                  <SectionCard id="climate">
+                    <ClimateMoistureSection climateAssessment={report.climateAssessment} />
+                  </SectionCard>
+                  <SectionCard id="soil-indicators">
+                    <SoilIndicatorsSection soilIndicators={report.soilIndicators} />
+                  </SectionCard>
+                  <SectionCard id="health">
+                    <HealthScoreSection
+                      healthScore={project.health}
+                      degradation={project.degrad}
+                      riskLevel={report.riskLevel}
+                      healthBreakdown={report.healthBreakdown}
+                    />
+                  </SectionCard>
+                  <SectionCard id="change-trend">
+                    <TrendSection trendPeriods={report.trendPeriods} trendSummary={report.trendSummary} />
+                  </SectionCard>
+                  <SectionCard id="zones">
+                    <PriorityZonesSection priorityZones={report.priorityZones} />
+                  </SectionCard>
+                  <SectionCard id="recommendations">
+                    <RecommendationsSection
+                      recommendations={report.recommendations}
+                      treatmentSummary={report.treatmentSummary}
+                      keyFindings={report.keyFindings}
+                    />
+                  </SectionCard>
+                </div>
+              </ReportErrorBoundary>
             </div>
           ) : (
             <div className="bg-white border border-border rounded-xl p-10 flex flex-col items-center text-center gap-3">

@@ -1,11 +1,12 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Receipt, Loader2, RefreshCw } from "lucide-react"
+import { Receipt, Loader2, RefreshCw, Pencil } from "lucide-react"
 import { Project } from "@/data/projects"
 import { BudgetReport } from "@/data/budget-report"
 import { Button } from "@/components/ui/button"
 import { BudgetReportPage } from "@/components/project/report-pages/BudgetReportPage"
+import { ReportEditPanel } from "@/components/project/ReportEditPanel"
 
 interface BudgetReportModuleProps {
   project: Project
@@ -15,6 +16,7 @@ interface BudgetReportModuleProps {
 export const BudgetReportModule: React.FC<BudgetReportModuleProps> = ({ project, onToast }) => {
   const [report, setReport] = useState<BudgetReport | null>(project.budgetReport)
   const [generating, setGenerating] = useState(false)
+  const [editing, setEditing] = useState(false)
 
   const handleGenerate = async () => {
     setGenerating(true)
@@ -68,12 +70,31 @@ export const BudgetReportModule: React.FC<BudgetReportModuleProps> = ({ project,
     )
   }
 
+  if (editing) {
+    return (
+      <ReportEditPanel
+        initial={report}
+        saveUrl={`/api/projects/${project.id}/budget-report`}
+        title="Editing Budget Report"
+        onCancel={() => setEditing(false)}
+        onSaved={(r) => {
+          setReport(r)
+          setEditing(false)
+        }}
+        onToast={onToast}
+      />
+    )
+  }
+
   return (
     <BudgetReportPage
       project={project}
       report={report}
       toolbar={
         <div className="space-y-2">
+          <Button size="sm" onClick={() => setEditing(true)} className="w-full">
+            <Pencil className="w-3.5 h-3.5" /> Edit
+          </Button>
           <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generating} className="w-full">
             {generating ? (
               <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Regenerating…</>

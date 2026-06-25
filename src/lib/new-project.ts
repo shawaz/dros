@@ -108,6 +108,7 @@ export function buildNewProject(id: string, input: NewProjectInput): Project {
     soilReport: null,
     budgetReport: null,
     fieldExecutionReport: null,
+    customHtml: null,
     kanban: [],
     resources: null,
     biomass: [],

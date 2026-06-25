@@ -1,5 +1,20 @@
 import type { Project } from "@/data/projects"
 import type { SatelliteAssessmentReport } from "@/data/satellite-report"
+import { DEMO_SATELLITE_REPORT } from "@/data/satellite-report-demo"
+
+/** Use the array if it has rows, else fall back to the demo defaults. */
+function orFallback<T>(val: unknown, fallback: T[]): T[] {
+  return Array.isArray(val) && val.length > 0 ? (val as T[]) : fallback
+}
+
+/** Like orFallback, but also guarantees every row carries a `status` value. */
+function withStatus<T>(val: unknown, fallback: T[]): T[] {
+  if (!Array.isArray(val) || val.length === 0) return fallback
+  return val.map((r) => ({
+    ...(r as object),
+    status: (r as { status?: unknown })?.status ?? "info",
+  })) as T[]
+}
 
 export function isSatelliteReportConfigured(): boolean {
   return Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_MODEL)
@@ -219,7 +234,26 @@ export async function generateSatelliteReport(project: Project): Promise<Satelli
     console.error(`[satellite-report] top-level keys: ${topKeys.slice(0, 8).join(", ")}`)
   }
 
-  const report = parsed as unknown as SatelliteAssessmentReport
+  // Normalise against the demo defaults so a partial/incomplete AI response
+  // can never produce an unrenderable report (missing fields or row `status`).
+  const D = DEMO_SATELLITE_REPORT
+  const report: SatelliteAssessmentReport = {
+    reportId: (parsed.reportId as string) || D.reportId,
+    generatedAt: new Date().toISOString(),
+    classification: (parsed.classification as string) || D.classification,
+    riskLevel: (parsed.riskLevel as SatelliteAssessmentReport["riskLevel"]) || D.riskLevel,
+    riskLabel: (parsed.riskLabel as string) || D.riskLabel,
+    ndviDistribution: withStatus(parsed.ndviDistribution, D.ndviDistribution),
+    trendPeriods: orFallback(parsed.trendPeriods, D.trendPeriods),
+    trendSummary: (parsed.trendSummary as string) || D.trendSummary,
+    climateAssessment: withStatus(parsed.climateAssessment, D.climateAssessment),
+    soilIndicators: withStatus(parsed.soilIndicators, D.soilIndicators),
+    healthBreakdown: withStatus(parsed.healthBreakdown, D.healthBreakdown),
+    priorityZones: orFallback(parsed.priorityZones, D.priorityZones),
+    recommendations: orFallback(parsed.recommendations, D.recommendations),
+    treatmentSummary: orFallback(parsed.treatmentSummary, D.treatmentSummary),
+    keyFindings: orFallback(parsed.keyFindings, D.keyFindings),
+  }
 
   // Splice actual measured values back in so AI estimates can't override them
   const sat = project.satellite!
